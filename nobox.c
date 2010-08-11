@@ -10,11 +10,11 @@ int main(int argc,char**argv){
 	sigchld(0);
 	int32_t x,y,mx,my,cs[255],root=xcb_setup_roots_iterator(xcb_get_setup(dpy)).data->root,tx=-1;
 	xcb_change_window_attributes(dpy,root,XCB_CW_EVENT_MASK,(uint32_t[]){XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT|XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY|XCB_EVENT_MASK_STRUCTURE_NOTIFY});
-	uint8_t xwd[]="xwd -id 0000000000>`mktemp --tmpdir=$HOME`&",cz=0,mz;
+	uint8_t cz=0,mz;
 	xcb_grab_key(dpy,1,root,0,64,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC);
+	xcb_grab_key(dpy,1,root,64,XCB_GRAB_ANY,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC);
 	for(mz=64;mz>1;mz>>=3){
 		xcb_grab_key(dpy,1,root,mz,XCB_GRAB_ANY,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC);
-		xcb_grab_key(dpy,1,root,mz|(mz==8?:4),52,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC);
 		xcb_grab_button(dpy,1,root,XCB_EVENT_MASK_BUTTON_PRESS,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC,XCB_NONE,XCB_NONE,XCB_GRAB_ANY,mz);
 	}
 	main:
@@ -104,22 +104,12 @@ int main(int argc,char**argv){
 				xcb_configure_window(dpy,cs[tx],XCB_CONFIG_WINDOW_BORDER_WIDTH|XCB_CONFIG_WINDOW_STACK_MODE,(uint32_t[]){1,XCB_STACK_MODE_ABOVE});
 				goto main;
 			case 24:goto*(ret="uxterm -fa monospace -fs 10&",&&cmd);
-			case 25:goto*(ret="pidgin&",&&cmd);
+			case 25:goto*(ret="uxterm -fa monospace -fs 10 -maximize -e centerim&",&&cmd);
 			case 31:goto*(ret="sleep 1;xset dpms force off",&&cmd);
 			case 33:goto*(ret="halt",&&cmd);
 			case 38:goto*(ret="firefox&",&&cmd);
 			case 39:goto*(ret="scite&",&&cmd);
-			case 40:
-				switch(my){
-				case XCB_MOD_MASK_1:
-					ret=xwd+18;
-					x=cs[y];
-					do*(char*)--ret='0'+x%10;while(x/=10);
-					goto*(ret=xwd,&&cmd);
-				case XCB_MOD_MASK_1|XCB_MOD_MASK_SHIFT:goto*(ret="xwd>`mktemp --tmpdir=$HOME`&",&&cmd);
-				case XCB_MOD_MASK_1|XCB_MOD_MASK_CONTROL:goto*(ret="xwd -root>`mktemp --tmpdir=$HOME`&",&&cmd);
-				default:goto main;
-				}
+			case 40:goto*(ret="xwd -root>`mktemp --tmpdir=$HOME`&",&&cmd);
 			case 44:full:
 				if(cz)xcb_configure_window(dpy,cs[y],XCB_CONFIG_WINDOW_X|XCB_CONFIG_WINDOW_Y|XCB_CONFIG_WINDOW_WIDTH|XCB_CONFIG_WINDOW_HEIGHT,(uint32_t[]){0,0,1680,1050});
 				goto main;
