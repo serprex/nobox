@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <sys/wait.h>
 #include <xcb/xcb.h>
+#include <xcb/xcb_atom.h>
+#include <xcb/xcb_icccm.h>
 void sigchld(int x){
 	if(signal(SIGCHLD,sigchld)!=SIG_ERR)
 		while(0<waitpid(-1,0,WNOHANG));
@@ -8,7 +10,7 @@ void sigchld(int x){
 int main(int argc,char**argv){
 	xcb_connection_t*dpy=xcb_connect(0,0);
 	sigchld(0);
-	int32_t x,y,mx,my,cs[255],root=xcb_setup_roots_iterator(xcb_get_setup(dpy)).data->root,tx=-1;
+	int32_t x,y,mx,my,cs[255],root=xcb_setup_roots_iterator(xcb_get_setup(dpy)).data->root,tx=-1,wmdel=xcb_atom_get(dpy,"WM_DELETE_WINDOW"),wmpro=xcb_atom_get(dpy,"WM_PROTOCOLS");
 	xcb_change_window_attributes(dpy,root,XCB_CW_EVENT_MASK,(uint32_t[]){XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT|XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY|XCB_EVENT_MASK_STRUCTURE_NOTIFY});
 	uint8_t cz=0,mz;
 	xcb_grab_key(dpy,1,root,0,64,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC);
@@ -56,7 +58,7 @@ int main(int argc,char**argv){
 		}
 		case XCB_MAP_REQUEST:
 			y=((xcb_map_request_event_t*)ret)->window;
-			ret=xcb_get_window_attributes_reply(dpy,xcb_get_window_attributes(dpy,y),0);
+			ret=xcb_get_window_attributes_reply(dpy,xcb_get_window_attributes_unchecked(dpy,y),0);
 			x+=((xcb_get_window_attributes_reply_t*)ret)->override_redirect;
 			free(ret);
 			for(;x>-1;x--)
@@ -71,15 +73,15 @@ int main(int argc,char**argv){
 		default:goto again;
 		}
 		mvsz:
-			ret=xcb_grab_pointer_reply(dpy,xcb_grab_pointer(dpy,0,root,XCB_EVENT_MASK_BUTTON_RELEASE|XCB_EVENT_MASK_POINTER_MOTION,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC,XCB_NONE,XCB_NONE,XCB_CURRENT_TIME),0);
+			ret=xcb_grab_pointer_reply(dpy,xcb_grab_pointer_unchecked(dpy,0,root,XCB_EVENT_MASK_BUTTON_RELEASE|XCB_EVENT_MASK_POINTER_MOTION,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC,XCB_NONE,XCB_NONE,XCB_CURRENT_TIME),0);
 			y+=((xcb_grab_pointer_reply_t*)ret)->status!=XCB_GRAB_STATUS_SUCCESS;
 			free(ret);
-			ret=xcb_get_geometry_reply(dpy,xcb_get_geometry(dpy,cs[y]),0);
+			ret=xcb_get_geometry_reply(dpy,xcb_get_geometry_unchecked(dpy,cs[y]),0);
 			mx=((xcb_get_geometry_reply_t*)ret)->x;
 			my=((xcb_get_geometry_reply_t*)ret)->y;
 			free(ret);
 			if(mz!=1||y==cz)goto main;
-			ret=xcb_query_pointer_reply(dpy,xcb_query_pointer(dpy,root),0);
+			ret=xcb_query_pointer_reply(dpy,xcb_query_pointer_unchecked(dpy,root),0);
 			mx=((xcb_query_pointer_reply_t*)ret)->root_x-mx;
 			my=((xcb_query_pointer_reply_t*)ret)->root_y-my;
 			free(ret);
@@ -113,9 +115,19 @@ int main(int argc,char**argv){
 				if(cz)xcb_configure_window(dpy,cs[y],XCB_CONFIG_WINDOW_X|XCB_CONFIG_WINDOW_Y|XCB_CONFIG_WINDOW_WIDTH|XCB_CONFIG_WINDOW_HEIGHT,(uint32_t[]){0,0,1680,1050});
 				goto main;
 			case 46:shut:
-				if(!cz)goto main;
-				xcb_set_close_down_mode(dpy,XCB_CLOSE_DOWN_DESTROY_ALL);
-				xcb_kill_client(dpy,cs[y]);
+				if(cz){
+					xcb_get_wm_protocols_reply_t pro;
+					if(xcb_get_wm_protocols_reply(dpy,xcb_get_wm_protocols_unchecked(dpy,cs[y],wmpro),&pro,0)){
+						for(x=pro.atoms_len-1;x>-1;x--)
+							if(pro.atoms[x]==wmdel){
+								xcb_send_event(dpy,0,cs[y],XCB_EVENT_MASK_NO_EVENT,(char*)(xcb_client_message_event_t[]){{.response_type=XCB_CLIENT_MESSAGE,.window=cs[y],.type=wmpro,.format=32,.data.data32={wmdel,XCB_CURRENT_TIME}}});
+								xcb_get_wm_protocols_reply_wipe(&pro);
+								goto main;
+							}
+						xcb_get_wm_protocols_reply_wipe(&pro);
+					}
+					xcb_kill_client(dpy,cs[y]);
+				}
 				goto main;
 			case 54:goto*(ret="sh -c 'xclock -digital -face monospace -update 1&sleep 2;kill $!'&",&&cmd);
 			cmd:system(ret);
