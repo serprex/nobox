@@ -1,8 +1,6 @@
 #include <stdlib.h>
 #include <sys/wait.h>
 #include <xcb/xcb.h>
-#include <xcb/xcb_atom.h>
-#include <xcb/xcb_icccm.h>
 void sigchld(int x){
 	if(signal(SIGCHLD,sigchld)!=SIG_ERR)
 		while(0<waitpid(-1,0,WNOHANG));
@@ -10,7 +8,14 @@ void sigchld(int x){
 int main(int argc,char**argv){
 	xcb_connection_t*dpy=xcb_connect(0,0);
 	sigchld(0);
-	int32_t x,y,mx,my,cs[255],root=xcb_setup_roots_iterator(xcb_get_setup(dpy)).data->root,tx=-1,wmdel=xcb_atom_get(dpy,"WM_DELETE_WINDOW"),wmpro=xcb_atom_get(dpy,"WM_PROTOCOLS");
+	void*ret;
+	int32_t x,y,mx,my,cs[255],root=xcb_setup_roots_iterator(xcb_get_setup(dpy)).data->root,tx=-1;
+	ret=xcb_intern_atom_reply(dpy,xcb_intern_atom(dpy,0,16,"WM_DELETE_WINDOW"),0);
+	int32_t wmdel=((xcb_intern_atom_reply_t*)ret)->atom;
+	free(ret);
+	ret=xcb_intern_atom_reply(dpy,xcb_intern_atom(dpy,0,12,"WM_PROTOCOLS"),0);
+	int32_t wmpro=((xcb_intern_atom_reply_t*)ret)->atom;
+	free(ret);
 	xcb_change_window_attributes(dpy,root,XCB_CW_EVENT_MASK,(uint32_t[]){XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT|XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY|XCB_EVENT_MASK_STRUCTURE_NOTIFY});
 	uint8_t cz=0,mz;
 	xcb_grab_key(dpy,1,root,0,64,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC);
@@ -21,7 +26,6 @@ int main(int argc,char**argv){
 	main:
 		xcb_flush(dpy);
 		noflush:x=y=cz-1;
-		void*ret;
 		again:switch(((xcb_generic_event_t*)(ret=xcb_wait_for_event(dpy)))->response_type&127){
 		case XCB_BUTTON_PRESS:
 			for(;x>-1;x--)
@@ -116,16 +120,16 @@ int main(int argc,char**argv){
 				goto main;
 			case 46:shut:
 				if(cz){
-					xcb_get_wm_protocols_reply_t pro;
-					if(xcb_get_wm_protocols_reply(dpy,xcb_get_wm_protocols_unchecked(dpy,cs[y],wmpro),&pro,0)){
-						for(x=pro.atoms_len-1;x>-1;x--)
-							if(pro.atoms[x]==wmdel){
-								xcb_send_event(dpy,0,cs[y],XCB_EVENT_MASK_NO_EVENT,(char*)(xcb_client_message_event_t[]){{.response_type=XCB_CLIENT_MESSAGE,.window=cs[y],.type=wmpro,.format=32,.data.data32={wmdel,XCB_CURRENT_TIME}}});
-								xcb_get_wm_protocols_reply_wipe(&pro);
-								goto main;
-							}
-						xcb_get_wm_protocols_reply_wipe(&pro);
-					}
+					uint32_t*atoms;
+					ret=xcb_get_property_reply(dpy,xcb_get_property_unchecked(dpy,0,cs[y],wmpro,XCB_ATOM_ATOM,0,-1),0);
+					atoms=xcb_get_property_value(ret);
+					for(x=xcb_get_property_value_length(ret)/4-1;x>-1;x--)
+						if(atoms[x]==wmdel){
+							xcb_send_event(dpy,0,cs[y],XCB_EVENT_MASK_NO_EVENT,(char*)(xcb_client_message_event_t[]){{.response_type=XCB_CLIENT_MESSAGE,.window=cs[y],.type=wmpro,.format=32,.data.data32={wmdel,XCB_CURRENT_TIME}}});
+							free(ret);
+							goto main;
+						}
+					free(ret);
 					xcb_kill_client(dpy,cs[y]);
 				}
 				goto main;
