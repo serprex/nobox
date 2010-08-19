@@ -108,8 +108,8 @@ int main(int argc,char**argv){
 				if(y!=-1)xcb_configure_window(dpy,cs[y],XCB_CONFIG_WINDOW_BORDER_WIDTH|XCB_CONFIG_WINDOW_SIBLING|XCB_CONFIG_WINDOW_STACK_MODE,(uint32_t[]){0,cs[tx],XCB_STACK_MODE_ABOVE});
 				xcb_configure_window(dpy,cs[tx],XCB_CONFIG_WINDOW_BORDER_WIDTH|XCB_CONFIG_WINDOW_STACK_MODE,(uint32_t[]){1,XCB_STACK_MODE_ABOVE});
 				goto main;
-			case 24:goto*(ret="uxterm -fa monospace -fs 10&",&&cmd);
-			case 25:goto*(ret="uxterm -fa monospace -fs 10 -maximize -e centerim&",&&cmd);
+			case 24:goto*(ret="urxvt +sb -fn 'xft:monospace-10' -e bash&",&&cmd);
+			case 25:goto*(ret="urxvt +sb -fn 'xft:monospace-10' -e centerim -geometry 160x60&",&&cmd);
 			case 31:goto*(ret="sleep 1;xset dpms force off",&&cmd);
 			case 33:goto*(ret="halt",&&cmd);
 			case 38:goto*(ret="firefox&",&&cmd);
@@ -120,16 +120,13 @@ int main(int argc,char**argv){
 				goto main;
 			case 46:shut:
 				if(cz){
-					uint32_t*atoms;
 					ret=xcb_get_property_reply(dpy,xcb_get_property_unchecked(dpy,0,cs[y],wmpro,XCB_ATOM_ATOM,0,-1),0);
-					atoms=xcb_get_property_value(ret);
-					for(x=xcb_get_property_value_length(ret)/4-1;x>-1;x--)
+					uint32_t*atoms=xcb_get_property_value(ret);
+					for(x=xcb_get_property_value_length(ret)/4-1,free(ret);x>-1;x--)
 						if(atoms[x]==wmdel){
 							xcb_send_event(dpy,0,cs[y],XCB_EVENT_MASK_NO_EVENT,(char*)(xcb_client_message_event_t[]){{.response_type=XCB_CLIENT_MESSAGE,.window=cs[y],.type=wmpro,.format=32,.data.data32={wmdel,XCB_CURRENT_TIME}}});
-							free(ret);
 							goto main;
 						}
-					free(ret);
 					xcb_kill_client(dpy,cs[y]);
 				}
 				goto main;
