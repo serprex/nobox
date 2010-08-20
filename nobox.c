@@ -109,7 +109,7 @@ int main(int argc,char**argv){
 				xcb_configure_window(dpy,cs[tx],XCB_CONFIG_WINDOW_BORDER_WIDTH|XCB_CONFIG_WINDOW_STACK_MODE,(uint32_t[]){1,XCB_STACK_MODE_ABOVE});
 				goto main;
 			case 24:goto*(ret="urxvt +sb -fn 'xft:monospace-10' -e bash&",&&cmd);
-			case 25:goto*(ret="urxvt +sb -fn 'xft:monospace-10' -e centerim -geometry 160x60&",&&cmd);
+			case 25:goto*(ret="urxvt +sb -fn 'xft:monospace-10' -geometry 160x60 -e centerim&",&&cmd);
 			case 31:goto*(ret="sleep 1;xset dpms force off",&&cmd);
 			case 33:goto*(ret="halt",&&cmd);
 			case 38:goto*(ret="firefox&",&&cmd);
@@ -130,7 +130,7 @@ int main(int argc,char**argv){
 					xcb_kill_client(dpy,cs[y]);
 				}
 				goto main;
-			case 54:goto*(ret="sh -c 'xclock -digital -face monospace -update 1&sleep 2;kill $!'&",&&cmd);
+			case 54:goto*(ret="urxvt +sb -fn 'xft:monospace-18' -geometry 29x2+500+500 -e sh -c 'date;sleep 2'&",&&cmd);
 			cmd:system(ret);
 			default:goto main;
 			}
