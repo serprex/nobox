@@ -114,7 +114,6 @@ int main(int argc,char**argv){
 			case 33:goto*(ret="halt",&&cmd);
 			case 38:goto*(ret="firefox&",&&cmd);
 			case 39:goto*(ret="scite&",&&cmd);
-			case 40:goto*(ret="xwd -root>`mktemp --tmpdir=$HOME`&",&&cmd);
 			case 44:full:
 				if(cz)xcb_configure_window(dpy,cs[y],XCB_CONFIG_WINDOW_X|XCB_CONFIG_WINDOW_Y|XCB_CONFIG_WINDOW_WIDTH|XCB_CONFIG_WINDOW_HEIGHT,(uint32_t[]){0,0,1680,1050});
 				goto main;
@@ -130,7 +129,7 @@ int main(int argc,char**argv){
 					xcb_kill_client(dpy,cs[y]);
 				}
 				goto main;
-			case 54:goto*(ret="urxvt +sb -fn 'xft:monospace-18' -geometry 29x2+500+500 -e sh -c 'date;sleep 2'&",&&cmd);
+			case 54:goto*(ret="urxvt +sb -fn 'xft:monospace-12' -geometry 29x2+500+500 -e sh -c 'date;sleep 2'&",&&cmd);
 			cmd:system(ret);
 			default:goto main;
 			}
