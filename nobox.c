@@ -80,11 +80,12 @@ int main(int argc,char**argv){
 			ret=xcb_grab_pointer_reply(dpy,xcb_grab_pointer_unchecked(dpy,0,root,XCB_EVENT_MASK_BUTTON_RELEASE|XCB_EVENT_MASK_POINTER_MOTION,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC,XCB_NONE,XCB_NONE,XCB_CURRENT_TIME),0);
 			y+=((xcb_grab_pointer_reply_t*)ret)->status!=XCB_GRAB_STATUS_SUCCESS;
 			free(ret);
+			if(y==cz)goto main;
 			ret=xcb_get_geometry_reply(dpy,xcb_get_geometry_unchecked(dpy,cs[y]),0);
 			mx=((xcb_get_geometry_reply_t*)ret)->x;
 			my=((xcb_get_geometry_reply_t*)ret)->y;
 			free(ret);
-			if(mz!=1||y==cz)goto main;
+			if(mz!=1)goto main;
 			ret=xcb_query_pointer_reply(dpy,xcb_query_pointer_unchecked(dpy,root),0);
 			mx=((xcb_query_pointer_reply_t*)ret)->root_x-mx;
 			my=((xcb_query_pointer_reply_t*)ret)->root_y-my;
@@ -100,6 +101,9 @@ int main(int argc,char**argv){
 			if(!(mz&128))goto main;
 			switch(mz&=127){
 			case 1:goto*(my==XCB_MOD_MASK_1?&&mvsz:&&full);
+			case 2:
+				xcb_set_input_focus(dpy,XCB_INPUT_FOCUS_POINTER_ROOT,((xcb_button_press_event_t*)ret)->child,XCB_CURRENT_TIME);
+				goto main;
 			case 3:goto*(my==XCB_MOD_MASK_1?&&mvsz:&&shut);
 			case 23:case 49:
 				if(cz<2)goto main;
@@ -114,6 +118,7 @@ int main(int argc,char**argv){
 			case 33:goto*(ret="halt",&&cmd);
 			case 38:goto*(ret="firefox&",&&cmd);
 			case 39:goto*(ret="scite&",&&cmd);
+			case 40:goto*(ret="scrot -q 1&",&&cmd);
 			case 44:full:
 				if(cz)xcb_configure_window(dpy,cs[y],XCB_CONFIG_WINDOW_X|XCB_CONFIG_WINDOW_Y|XCB_CONFIG_WINDOW_WIDTH|XCB_CONFIG_WINDOW_HEIGHT,(uint32_t[]){0,0,1680,1050});
 				goto main;
@@ -121,7 +126,7 @@ int main(int argc,char**argv){
 				if(cz){
 					ret=xcb_get_property_reply(dpy,xcb_get_property_unchecked(dpy,0,cs[y],wmpro,XCB_ATOM_ATOM,0,-1),0);
 					uint32_t*atoms=xcb_get_property_value(ret);
-					for(x=xcb_get_property_value_length(ret)/4-1,free(ret);x>-1;x--)
+					for(x=(xcb_get_property_value_length(ret)>>2)-1,free(ret);x>-1;x--)
 						if(atoms[x]==wmdel){
 							xcb_send_event(dpy,0,cs[y],XCB_EVENT_MASK_NO_EVENT,(char*)(xcb_client_message_event_t[]){{.response_type=XCB_CLIENT_MESSAGE,.window=cs[y],.type=wmpro,.format=32,.data.data32={wmdel,XCB_CURRENT_TIME}}});
 							goto main;
@@ -129,7 +134,7 @@ int main(int argc,char**argv){
 					xcb_kill_client(dpy,cs[y]);
 				}
 				goto main;
-			case 54:goto*(ret="urxvt +sb -fn 'xft:monospace-12' -geometry 29x2+500+500 -e sh -c 'date;sleep 2'&",&&cmd);
+			case 54:ret="urxvt +sb -fn 'xft:monospace-12' -geometry 29x2+500+500 -e sh -c 'date;sleep 2'&";
 			cmd:system(ret);
 			default:goto main;
 			}
