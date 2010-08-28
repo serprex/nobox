@@ -96,14 +96,11 @@ int main(int argc,char**argv){
 			for(;x!=y;x+=x<y?:-1)cs[x]=cs[x<y?x+1:x-1];
 			cs[x]=mx;
 			hocus:x=cz-1;
-			pocus:xcb_configure_window(dpy,cs[x],XCB_CONFIG_WINDOW_BORDER_WIDTH|XCB_CONFIG_WINDOW_STACK_MODE,(uint32_t[]){0,XCB_STACK_MODE_ABOVE});
-			xcb_set_input_focus(dpy,XCB_INPUT_FOCUS_POINTER_ROOT,cs[x],XCB_CURRENT_TIME);
+			xcb_configure_window(dpy,cs[x],XCB_CONFIG_WINDOW_BORDER_WIDTH|XCB_CONFIG_WINDOW_STACK_MODE,(uint32_t[]){0,XCB_STACK_MODE_ABOVE});
+			pocus:xcb_set_input_focus(dpy,XCB_INPUT_FOCUS_POINTER_ROOT,cs[x],XCB_CURRENT_TIME);
 			if(!(mz&128))goto main;
 			switch(mz&=127){
 			case 1:goto*(my==XCB_MOD_MASK_1?&&mvsz:&&full);
-			case 2:
-				xcb_set_input_focus(dpy,XCB_INPUT_FOCUS_POINTER_ROOT,((xcb_button_press_event_t*)ret)->child,XCB_CURRENT_TIME);
-				goto main;
 			case 3:goto*(my==XCB_MOD_MASK_1?&&mvsz:&&shut);
 			case 23:case 49:
 				if(cz<2)goto main;
