@@ -11,7 +11,7 @@ int main(int argc,char**argv){
 	void*p;
 	int32_t x,y,mx,my,cs[255],root=xcb_setup_roots_iterator(xcb_get_setup(dpy)).data->root,tx;
 	xcb_change_window_attributes(dpy,root,XCB_CW_EVENT_MASK,(uint32_t[]){XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT|XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY|XCB_EVENT_MASK_STRUCTURE_NOTIFY});
-	uint8_t cz=0,mz;
+	uint8_t cz=0,mz,mZ;
 	xcb_grab_key(dpy,1,root,0,64,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC);
 	for(tx=64;tx>1;tx>>=3){
 		xcb_grab_key(dpy,1,root,tx,XCB_GRAB_ANY,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC);
@@ -62,7 +62,7 @@ int main(int argc,char**argv){
 			cs[cz++]=y;
 			xcb_map_window(dpy,y);
 			goto hocus;
-		if(0)case XCB_MOTION_NOTIFY:xcb_configure_window(dpy,cs[y],mz==1?XCB_CONFIG_WINDOW_X|XCB_CONFIG_WINDOW_Y:XCB_CONFIG_WINDOW_WIDTH|XCB_CONFIG_WINDOW_HEIGHT,(int32_t[]){mz==3&&((xcb_motion_notify_event_t*)p)->root_x-mx<1?:((xcb_motion_notify_event_t*)p)->root_x-mx,mz==3&&((xcb_motion_notify_event_t*)p)->root_y-my<1?:((xcb_motion_notify_event_t*)p)->root_y-my});
+		if(0)case XCB_MOTION_NOTIFY:xcb_configure_window(dpy,cs[y],mZ==1?XCB_CONFIG_WINDOW_X|XCB_CONFIG_WINDOW_Y:XCB_CONFIG_WINDOW_WIDTH|XCB_CONFIG_WINDOW_HEIGHT,(int32_t[]){mZ==3&&((xcb_motion_notify_event_t*)p)->root_x-mx<1?:((xcb_motion_notify_event_t*)p)->root_x-mx,mZ==3&&((xcb_motion_notify_event_t*)p)->root_y-my<1?:((xcb_motion_notify_event_t*)p)->root_y-my});
 		else case XCB_BUTTON_RELEASE:xcb_ungrab_pointer(dpy,XCB_CURRENT_TIME);
 		goto main;
 		case XCB_DESTROY_NOTIFY:case XCB_UNMAP_NOTIFY:unmap:goto*(x<0?&&noflush:cs[x]==((xcb_unmap_notify_event_t*)p)->window&&--cz?&&stack:(x--,&&unmap));
@@ -77,6 +77,7 @@ int main(int argc,char**argv){
 			mx=((xcb_get_geometry_reply_t*)p)->x;
 			my=((xcb_get_geometry_reply_t*)p)->y;
 			free(p);
+			mZ=mz;
 			if(mz!=1)goto noflush;
 			p=xcb_query_pointer_reply(dpy,xcb_query_pointer_unchecked(dpy,root),0);
 			mx=((xcb_query_pointer_reply_t*)p)->root_x-mx;
@@ -101,13 +102,13 @@ int main(int argc,char**argv){
 				if(y!=-1)xcb_configure_window(dpy,cs[y],XCB_CONFIG_WINDOW_BORDER_WIDTH|XCB_CONFIG_WINDOW_SIBLING|XCB_CONFIG_WINDOW_STACK_MODE,(uint32_t[]){0,cs[tx],XCB_STACK_MODE_ABOVE});
 				xcb_configure_window(dpy,cs[tx],XCB_CONFIG_WINDOW_BORDER_WIDTH|XCB_CONFIG_WINDOW_STACK_MODE,(uint32_t[]){1,XCB_STACK_MODE_ABOVE});
 				goto main;
-			case 24:goto*(p="urxvt +sb -fn 'xft:monospace-10' -e bash&",&&cmd);
+			case 24:goto*(p="urxvt +sb -fn 'xft:monospace-10'&",&&cmd);
 			case 25:goto*(p="thunderbird&",&&cmd);
+			case 26:goto*(p="scrot -q 1&",&&cmd);
 			case 31:goto*(p="sleep 1;xset dpms force off",&&cmd);
 			case 33:goto*(p="halt",&&cmd);
 			case 38:goto*(p="firefox&",&&cmd);
 			case 39:goto*(p="scite&",&&cmd);
-			case 40:goto*(p="scrot -q 1&",&&cmd);
 			case 44:full:
 				if(cz)xcb_configure_window(dpy,cs[y],XCB_CONFIG_WINDOW_X|XCB_CONFIG_WINDOW_Y|XCB_CONFIG_WINDOW_WIDTH|XCB_CONFIG_WINDOW_HEIGHT,(uint32_t[]){0,0,1680,1050});
 				goto main;
@@ -121,11 +122,11 @@ int main(int argc,char**argv){
 				free(p);
 				p=xcb_get_property_reply(dpy,xcb_get_property_unchecked(dpy,0,cs[y],mx,XCB_ATOM_ATOM,0,-1),0);
 				xcb_send_event(dpy,0,cs[y],XCB_EVENT_MASK_NO_EVENT,(void*)(xcb_client_message_event_t[]){{.response_type=XCB_CLIENT_MESSAGE,.window=cs[y],.type=mx,.format=32,.data.data32={my,XCB_CURRENT_TIME}}});
-				for(x=(xcb_get_property_value_length(p)>>2)-1;((uint32_t*)xcb_get_property_value(p))[x]!=my&&x!=-1;x--);
+				for(x=(xcb_get_property_value_length(p)>>2)-1;((uint32_t*)xcb_get_property_value(p))[x]!=my&&x>-1;x--);
 				if(x==-1)xcb_kill_client(dpy,cs[y]);
 				free(p);
 				goto main;
-			case 54:p="urxvt +sb -fn 'xft:monospace-16' -geometry 29x2+500+500 -e sh -c 'date;sleep 1'&";
+			case 54:p="urxvt +sb -fn 'xft:monospace-14' -geometry 29x2+500+500 -e sh -c 'date;sleep 1'&";
 			cmd:system(p);
 			default:goto main;
 			}
