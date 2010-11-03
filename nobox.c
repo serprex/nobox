@@ -102,10 +102,9 @@ int main(int argc,char**argv){
 				if(y!=-1)xcb_configure_window(dpy,cs[y],XCB_CONFIG_WINDOW_BORDER_WIDTH|XCB_CONFIG_WINDOW_SIBLING|XCB_CONFIG_WINDOW_STACK_MODE,(uint32_t[]){0,cs[tx],XCB_STACK_MODE_ABOVE});
 				xcb_configure_window(dpy,cs[tx],XCB_CONFIG_WINDOW_BORDER_WIDTH|XCB_CONFIG_WINDOW_STACK_MODE,(uint32_t[]){1,XCB_STACK_MODE_ABOVE});
 				goto main;
-			case 24:goto*(p="urxvt +sb -fn 'xft:monospace-10'&",&&cmd);
+			case 24:goto*(p="urxvt +sb -fn 'xft:monospace-10' -e bash&",&&cmd);
 			case 25:goto*(p="thunderbird&",&&cmd);
 			case 26:goto*(p="scrot -q 1&",&&cmd);
-			case 31:goto*(p="sleep 1;xset dpms force off",&&cmd);
 			case 33:goto*(p="halt",&&cmd);
 			case 38:goto*(p="firefox&",&&cmd);
 			case 39:goto*(p="scite&",&&cmd);
