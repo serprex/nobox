@@ -33,7 +33,7 @@ int main(int argc,char**argv){
 			goto noflush;
 		case XCB_KEY_RELEASE:
 			if(((xcb_key_press_event_t*)p)->detail!=64||tx==-1)goto again;
-			x=tx;
+			xt:x=tx;
 			tx=-1;
 			goto stack;
 		case XCB_CONFIGURE_REQUEST:;
@@ -59,8 +59,7 @@ int main(int argc,char**argv){
 			free(p);
 			for(;x>-1;x--)
 				if(x>=cz||cz==255||cs[x]==y)goto noflush;
-			cs[cz++]=y;
-			xcb_map_window(dpy,y);
+			xcb_map_window(dpy,cs[cz++]=y);
 			goto hocus;
 		if(0)case XCB_MOTION_NOTIFY:xcb_configure_window(dpy,cs[y],mZ==1?XCB_CONFIG_WINDOW_X|XCB_CONFIG_WINDOW_Y:XCB_CONFIG_WINDOW_WIDTH|XCB_CONFIG_WINDOW_HEIGHT,(int32_t[]){mZ==3&&((xcb_motion_notify_event_t*)p)->root_x-mx<1?:((xcb_motion_notify_event_t*)p)->root_x-mx,mZ==3&&((xcb_motion_notify_event_t*)p)->root_y-my<1?:((xcb_motion_notify_event_t*)p)->root_y-my});
 		else case XCB_BUTTON_RELEASE:xcb_ungrab_pointer(dpy,XCB_CURRENT_TIME);
@@ -113,6 +112,7 @@ int main(int argc,char**argv){
 				goto main;
 			case 46:shut:
 				if(!cz)goto main;
+				if(tx!=-1)goto*(mz|=128,&&xt);
 				p=xcb_intern_atom_reply(dpy,xcb_intern_atom_unchecked(dpy,0,12,"WM_PROTOCOLS"),0);
 				mx=((xcb_intern_atom_reply_t*)p)->atom;
 				free(p);
