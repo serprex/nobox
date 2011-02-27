@@ -5,12 +5,13 @@ void sigchld(int x){
 	if(signal(SIGCHLD,sigchld)!=SIG_ERR)
 		while(0<waitpid(-1,0,WNOHANG));
 }
+const uint32_t cwa=XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT|XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY|XCB_EVENT_MASK_STRUCTURE_NOTIFY,cw0[]={0,XCB_STACK_MODE_ABOVE},cw1[]={1,XCB_STACK_MODE_ABOVE},di[]={0,0,1680,1050};
 int main(int argc,char**argv){
-	xcb_connection_t*dpy=xcb_connect(0,0);
 	sigchld(0);
+	xcb_connection_t*dpy=xcb_connect(0,0);
 	void*p;
 	int32_t x,y,mx,my,cs[255],root=xcb_setup_roots_iterator(xcb_get_setup(dpy)).data->root,tx;
-	xcb_change_window_attributes(dpy,root,XCB_CW_EVENT_MASK,(uint32_t[]){XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT|XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY|XCB_EVENT_MASK_STRUCTURE_NOTIFY});
+	xcb_change_window_attributes(dpy,root,XCB_CW_EVENT_MASK,&cwa);
 	uint8_t cz=0,mz,mZ;
 	xcb_grab_key(dpy,1,root,0,64,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC);
 	for(tx=64;tx>1;tx>>=3){
@@ -38,13 +39,11 @@ int main(int argc,char**argv){
 			goto stack;
 		case XCB_CONFIGURE_REQUEST:;
 			uint32_t c[6],*cp=c;
-			if(((xcb_configure_request_event_t*)p)->value_mask&XCB_CONFIG_WINDOW_X)*cp++=((xcb_configure_request_event_t*)p)->x;
-			if(((xcb_configure_request_event_t*)p)->value_mask&XCB_CONFIG_WINDOW_Y)*cp++=((xcb_configure_request_event_t*)p)->y;
-			if(((xcb_configure_request_event_t*)p)->value_mask&XCB_CONFIG_WINDOW_WIDTH)*cp++=((xcb_configure_request_event_t*)p)->width;
-			if(((xcb_configure_request_event_t*)p)->value_mask&XCB_CONFIG_WINDOW_HEIGHT)*cp++=((xcb_configure_request_event_t*)p)->height;
+			for(int i=0;i<5;i++)
+				if(((xcb_configure_request_event_t*)p)->value_mask&1<<i)*cp++=*(uint16_t*)(p+16+i*2);
 			if(((xcb_configure_request_event_t*)p)->value_mask&XCB_CONFIG_WINDOW_SIBLING)*cp++=((xcb_configure_request_event_t*)p)->sibling;
 			if(((xcb_configure_request_event_t*)p)->value_mask&XCB_CONFIG_WINDOW_STACK_MODE)*cp=((xcb_configure_request_event_t*)p)->stack_mode;
-			xcb_configure_window(dpy,((xcb_configure_request_event_t*)p)->window,((xcb_configure_request_event_t*)p)->value_mask&~XCB_CONFIG_WINDOW_BORDER_WIDTH,c);
+			xcb_configure_window(dpy,((xcb_configure_request_event_t*)p)->window,((xcb_configure_request_event_t*)p)->value_mask,c);
 			for(;x>-1;x--)
 				if(cs[x]==((xcb_configure_request_event_t*)p)->window&&((xcb_configure_request_event_t*)p)->value_mask&XCB_CONFIG_WINDOW_STACK_MODE)
 					switch(((xcb_configure_request_event_t*)p)->stack_mode){
@@ -57,8 +56,9 @@ int main(int argc,char**argv){
 			p=xcb_get_window_attributes_reply(dpy,xcb_get_window_attributes_unchecked(dpy,y),0);
 			x+=((xcb_get_window_attributes_reply_t*)p)->override_redirect;
 			free(p);
+			if(x>=cz||cz==255)goto noflush;
 			for(;x>-1;x--)
-				if(x>=cz||cz==255||cs[x]==y)goto noflush;
+				if(cs[x]==y)goto noflush;
 			xcb_map_window(dpy,cs[cz++]=y);
 			goto hocus;
 		if(0)case XCB_MOTION_NOTIFY:xcb_configure_window(dpy,cs[y],mZ==1?XCB_CONFIG_WINDOW_X|XCB_CONFIG_WINDOW_Y:XCB_CONFIG_WINDOW_WIDTH|XCB_CONFIG_WINDOW_HEIGHT,(int32_t[]){mZ==3&&((xcb_motion_notify_event_t*)p)->root_x-mx<1?:((xcb_motion_notify_event_t*)p)->root_x-mx,mZ==3&&((xcb_motion_notify_event_t*)p)->root_y-my<1?:((xcb_motion_notify_event_t*)p)->root_y-my});
@@ -88,7 +88,7 @@ int main(int argc,char**argv){
 			for(;x!=y;x+=x<y?:-1)cs[x]=cs[x<y?x+1:x-1];
 			cs[x]=mx;
 			hocus:x=cz-1;
-			xcb_configure_window(dpy,cs[x],XCB_CONFIG_WINDOW_BORDER_WIDTH|XCB_CONFIG_WINDOW_STACK_MODE,(uint32_t[]){0,XCB_STACK_MODE_ABOVE});
+			xcb_configure_window(dpy,cs[x],XCB_CONFIG_WINDOW_BORDER_WIDTH|XCB_CONFIG_WINDOW_STACK_MODE,cw0);
 			pocus:xcb_set_input_focus(dpy,XCB_INPUT_FOCUS_POINTER_ROOT,cs[x],XCB_CURRENT_TIME);
 			if(!(mz&128))goto main;
 			switch(mz&=127){
@@ -99,7 +99,7 @@ int main(int argc,char**argv){
 				y=tx;
 				tx=mz==23?(y?(y==-1?x:y)-1:x):y==x?0:y+1;
 				if(y!=-1)xcb_configure_window(dpy,cs[y],XCB_CONFIG_WINDOW_BORDER_WIDTH|XCB_CONFIG_WINDOW_SIBLING|XCB_CONFIG_WINDOW_STACK_MODE,(uint32_t[]){0,cs[tx],XCB_STACK_MODE_ABOVE});
-				xcb_configure_window(dpy,cs[tx],XCB_CONFIG_WINDOW_BORDER_WIDTH|XCB_CONFIG_WINDOW_STACK_MODE,(uint32_t[]){1,XCB_STACK_MODE_ABOVE});
+				xcb_configure_window(dpy,cs[tx],XCB_CONFIG_WINDOW_BORDER_WIDTH|XCB_CONFIG_WINDOW_STACK_MODE,cw1);
 				goto main;
 			case 24:goto*(p="urxvt +sb -fn 'xft:monospace-10' -e bash&",&&cmd);
 			case 25:goto*(p="thunderbird&",&&cmd);
@@ -108,7 +108,7 @@ int main(int argc,char**argv){
 			case 38:goto*(p="firefox&",&&cmd);
 			case 39:goto*(p="scite&",&&cmd);
 			case 44:full:
-				if(cz)xcb_configure_window(dpy,cs[y],XCB_CONFIG_WINDOW_X|XCB_CONFIG_WINDOW_Y|XCB_CONFIG_WINDOW_WIDTH|XCB_CONFIG_WINDOW_HEIGHT,(uint32_t[]){0,0,1680,1050});
+				if(cz)xcb_configure_window(dpy,cs[y],XCB_CONFIG_WINDOW_X|XCB_CONFIG_WINDOW_Y|XCB_CONFIG_WINDOW_WIDTH|XCB_CONFIG_WINDOW_HEIGHT,di);
 				goto main;
 			case 46:shut:
 				if(!cz)goto main;
