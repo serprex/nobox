@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include <sys/wait.h>
 #include <xcb/xcb.h>
 void sigchld(int x){
@@ -10,13 +11,13 @@ int main(int argc,char**argv){
 	sigchld(0);
 	xcb_connection_t*dpy=xcb_connect(0,0);
 	void*p;
-	int32_t x,y,mx,my,cs[255],root=xcb_setup_roots_iterator(xcb_get_setup(dpy)).data->root,tx;
-	xcb_change_window_attributes(dpy,root,XCB_CW_EVENT_MASK,&cwa);
+	int32_t x,y,mx,my,cs[255],rt=xcb_setup_roots_iterator(xcb_get_setup(dpy)).data->root,tx;
+	xcb_change_window_attributes(dpy,rt,XCB_CW_EVENT_MASK,&cwa);
 	uint8_t cz=0,mz,mZ;
-	xcb_grab_key(dpy,1,root,0,64,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC);
+	xcb_grab_key(dpy,1,rt,0,64,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC);
 	for(tx=64;tx>1;tx>>=3){
-		xcb_grab_key(dpy,1,root,tx,XCB_GRAB_ANY,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC);
-		xcb_grab_button(dpy,1,root,XCB_EVENT_MASK_BUTTON_PRESS,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC,XCB_NONE,XCB_NONE,XCB_GRAB_ANY,tx);
+		xcb_grab_key(dpy,1,rt,tx,XCB_GRAB_ANY,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC);
+		xcb_grab_button(dpy,1,rt,XCB_EVENT_MASK_BUTTON_PRESS,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC,XCB_NONE,XCB_NONE,XCB_GRAB_ANY,tx);
 	}
 	tx=-tx;
 	main:xcb_flush(dpy);
@@ -54,6 +55,7 @@ int main(int argc,char**argv){
 		case XCB_MAP_REQUEST:
 			y=((xcb_map_request_event_t*)p)->window;
 			p=xcb_get_window_attributes_reply(dpy,xcb_get_window_attributes_unchecked(dpy,y),0);
+			if(!p)goto noflush;
 			x+=((xcb_get_window_attributes_reply_t*)p)->override_redirect;
 			free(p);
 			if(x>=cz||cz==255)goto noflush;
@@ -68,7 +70,7 @@ int main(int argc,char**argv){
 		default:goto again;
 		}
 		mvsz:
-			p=xcb_grab_pointer_reply(dpy,xcb_grab_pointer_unchecked(dpy,0,root,XCB_EVENT_MASK_BUTTON_RELEASE|XCB_EVENT_MASK_POINTER_MOTION,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC,XCB_NONE,XCB_NONE,XCB_CURRENT_TIME),0);
+			p=xcb_grab_pointer_reply(dpy,xcb_grab_pointer_unchecked(dpy,0,rt,XCB_EVENT_MASK_BUTTON_RELEASE|XCB_EVENT_MASK_POINTER_MOTION,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC,XCB_NONE,XCB_NONE,XCB_CURRENT_TIME),0);
 			y+=((xcb_grab_pointer_reply_t*)p)->status!=XCB_GRAB_STATUS_SUCCESS;
 			free(p);
 			if(y==cz)goto noflush;
@@ -78,7 +80,7 @@ int main(int argc,char**argv){
 			free(p);
 			mZ=mz;
 			if(mz!=1)goto noflush;
-			p=xcb_query_pointer_reply(dpy,xcb_query_pointer_unchecked(dpy,root),0);
+			p=xcb_query_pointer_reply(dpy,xcb_query_pointer_unchecked(dpy,rt),0);
 			mx=((xcb_query_pointer_reply_t*)p)->root_x-mx;
 			my=((xcb_query_pointer_reply_t*)p)->root_y-my;
 			free(p);
