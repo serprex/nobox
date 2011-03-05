@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include <stdio.h>
 #include <sys/wait.h>
 #include <xcb/xcb.h>
 void sigchld(int x){
