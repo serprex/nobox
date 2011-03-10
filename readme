@@ -1,0 +1,22 @@
+nobox is the reductio ad absurdum of *box style. It might be the illegible terseness of the code, the lack of any rendering causing the startup screen to be void, or the lack of using any other library besides libc and xcb
+
+nobox's configuration
+There are some things which are assumed, as the source of nobox uses keycodes directly, rather than keysyms. The source currently assumes the following keycode map, so you'll want to verify with xev
+LeftAlt 64. LeftAlt modifier 64. This is a big one. nobox grabs 64 and doesn't give it back. This makes Alt unavailable to client programs. It also grabs the windows key
+WinKey modifier 8. Note that stealing alt from the clients is for alttab's release, so the winkey isn't stolen. Only combinations with it
+Lclick1 Alt drag, brings to top. Win maximizes. Mclick2 Input focus without bringing to top. Rclick3 Alt resize, brings to top. Win close
+Tab23/~49 While holding alt, repeated clicks will cycle windows. ~ cycles backwards
+The following are trivial to change: q24 urxvt w25 thunderbird e26 scrot p33 shutdown a38 firefox s39 scite j44 maximize l46 close c54 clock
+
+nobox's code Part of me wants to make nobox.c into that literate programming style, but citing a past explanation seems easier
+nobox uses three headers: stdlib for system, sys/wait for sigchld, and then xcb/xcb for everything else
+sigchld ripped from dwm. Kills zombies
+static const because inline has GCC pushing the constants on the stack with wasteful writes
+xcb_connect is called after sigchld because the former's return value is used immediately, so there isn't as much register shuffling
+grab_key mess sets up receiving alt releases and modifier grabbing. Leaves tx as -1 afterwards
+
+MAP_REQUEST basically explains the structure of cs. After reading case 23:case 49:, tx can be understood. x and y are used mainly for window shuffling. This is underlined by stack's ABI. mz carries a flag to cover for when the user issues a command. mx and my are used by the resize/move functions. stack happens to have subsections, and is designed that jumping to its tail can function (hocus puts x on top, without the shuffle, while pocus sticks to input focus for Mclick)
+
+tx was added since alt tab requires constant book keeping. The hassle is that it has to bring the possible window on top, all while maintaining the general order (when choosing the next window, put the current one back) So tx is a pointer to the window under consideration, with a signal value of -1
+
+MOTION_NOTIFY and BUTTON_RELEASE occur after mvsz. This is the sticky area, where it's assumed that stack and such won't get called between those events (After finding that that assumption holds only to a certain degree, I added mZ to keep a copy of mz's state. Overall, I went with worse is better and let oddities occur if one decides to alt tab while resizing a window) Anywhere else, mx and my can be used as temporary variables or parameters (Like my for the key for commands)
