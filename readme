@@ -1,14 +1,13 @@
-nobox is the reductio ad absurdum of *box style. It might be the illegible terseness of the code, the lack of any rendering causing the startup screen to be void, or the lack of using any other library besides libc and xcb
+The reductio ad absurdum of *box minimalism. It might be the illegible terseness of the code, the lack of any rendering causing the startup screen to be void, or the lack of using any other library besides libc and xcb. Whatever it is, it's not
 
-nobox's configuration
-There are some things which are assumed, as the source of nobox uses keycodes directly, rather than keysyms. The source currently assumes the following keycode map, so you'll want to verify with xev
+conf There are some things which are assumed, as the source of nobox uses keycodes directly, rather than keysyms. The source currently assumes the following keycode map, so you'll want to verify with xev
 LeftAlt 64. LeftAlt modifier 64. This is a big one. nobox grabs 64 and doesn't give it back. This makes Alt unavailable to client programs. It also grabs the windows key
 WinKey modifier 8. Note that stealing alt from the clients is for alttab's release, so the winkey isn't stolen. Only combinations with it
 Lclick1 Alt drag, brings to top. Win maximizes. Mclick2 Input focus without bringing to top. Rclick3 Alt resize, brings to top. Win close
 Tab23/~49 While holding alt, repeated clicks will cycle windows. ~ cycles backwards
 The following are trivial to change: q24 urxvt w25 thunderbird e26 scrot p33 shutdown a38 firefox s39 scite j44 maximize l46 close c54 clock
 
-nobox's code Part of me wants to make nobox.c into that literate programming style, but citing a past explanation seems easier
+code Part of me wants to make nobox.c into that literate programming style, but citing a past explanation seems easier
 nobox uses three headers: stdlib for system, sys/wait for sigchld, and then xcb/xcb for everything else
 sigchld ripped from dwm. Kills zombies
 static const because inline has GCC pushing the constants on the stack with wasteful writes
