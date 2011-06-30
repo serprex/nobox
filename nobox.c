@@ -56,9 +56,11 @@ int main(int argc,char**argv){
 			mx=((xcb_map_request_event_t*)p)->window;
 			p=xcb_get_window_attributes_reply(d,xcb_get_window_attributes_unchecked(d,mx),0);
 			if(!p)goto noflush;
-			x+=((xcb_get_window_attributes_reply_t*)p)->override_redirect;
+			if(((xcb_get_window_attributes_reply_t*)p)->override_redirect||cz-cs==255){
+				free(p);
+				goto noflush;
+			}
 			free(p);
-			if(x>=cz||cz-cs==255)goto noflush;
 			for(;x>=cs;x--)
 				if(*x==mx)goto noflush;
 			xcb_map_window(d,*cz++=mx);
@@ -102,7 +104,7 @@ int main(int argc,char**argv){
 				if(y&&y<cz-1)xcb_configure_window(d,*y,XCB_CONFIG_WINDOW_SIBLING|XCB_CONFIG_WINDOW_STACK_MODE,(uint32_t[]){y[mz==23?:-1],mz==23?XCB_STACK_MODE_BELOW:XCB_STACK_MODE_ABOVE});
 				xcb_configure_window(d,*tx,XCB_CONFIG_WINDOW_STACK_MODE,&sma);
 				goto main;
-			case 24:goto*(p="urxvt +sb -fn 'xft:monospace-10' -e bash&",&&cmd);
+			case 24:goto*(p="urxvt +sb -fn xft:monospace-10 -e bash&",&&cmd);
 			case 25:goto*(p="thunderbird&",&&cmd);
 			case 26:goto*(p="scrot -q 1&",&&cmd);
 			case 33:goto*(p="halt",&&cmd);
@@ -126,7 +128,7 @@ int main(int argc,char**argv){
 				if(mx==-1)xcb_kill_client(d,*y);
 				free(p);
 				goto main;
-			case 54:p="urxvt +sb -fn 'xft:monospace-14' -geometry 29x2+500+500 -e sh -c 'date;sleep 1'&";
+			case 54:p="urxvt +sb -fn xft:monospace-14 -geometry 29x2+500+500 -e sh -c 'date;sleep 1'&";
 			cmd:system(p);
 			default:goto main;
 			}
