@@ -55,11 +55,8 @@ int main(int argc,char**argv){
 		case XCB_MAP_REQUEST:
 			mx=((xcb_map_request_event_t*)p)->window;
 			p=xcb_get_window_attributes_reply(d,xcb_get_window_attributes_unchecked(d,mx),0);
-			if(!p)goto noflush;
-			if(((xcb_get_window_attributes_reply_t*)p)->override_redirect||cz-cs==255){
-				free(p);
-				goto noflush;
-			}
+			if(!p)default:goto again;
+			if(((xcb_get_window_attributes_reply_t*)p)->override_redirect||cz-cs==255)goto freeflush;
 			free(p);
 			for(;x>=cs;x--)
 				if(*x==mx)goto noflush;
@@ -68,14 +65,12 @@ int main(int argc,char**argv){
 		if(0)case XCB_MOTION_NOTIFY:xcb_configure_window(d,*y,mZ?XCB_CONFIG_WINDOW_WIDTH|XCB_CONFIG_WINDOW_HEIGHT:XCB_CONFIG_WINDOW_X|XCB_CONFIG_WINDOW_Y,(int32_t[]){mZ&&((xcb_motion_notify_event_t*)p)->root_x<=mx?:((xcb_motion_notify_event_t*)p)->root_x-mx,mZ&&((xcb_motion_notify_event_t*)p)->root_y<=my?:((xcb_motion_notify_event_t*)p)->root_y-my});
 		else case XCB_BUTTON_RELEASE:xcb_ungrab_pointer(d,XCB_CURRENT_TIME);
 		goto main;
-		case XCB_DESTROY_NOTIFY:case XCB_UNMAP_NOTIFY:unmap:goto*(x<cs?&&noflush:*x==((xcb_unmap_notify_event_t*)p)->window&&--cz>cs?&&stack:(x--,&&unmap));
-		default:goto again;
+		case XCB_UNMAP_NOTIFY:unmap:goto*(x<cs?&&noflush:*x==((xcb_unmap_notify_event_t*)p)->window&&--cz>cs?&&stack:(x--,&&unmap));
 		}
 		mvsz:
 			p=xcb_grab_pointer_reply(d,xcb_grab_pointer_unchecked(d,0,rt,XCB_EVENT_MASK_BUTTON_RELEASE|XCB_EVENT_MASK_POINTER_MOTION,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC,XCB_NONE,XCB_NONE,XCB_CURRENT_TIME),0);
-			y+=((xcb_grab_pointer_reply_t*)p)->status!=XCB_GRAB_STATUS_SUCCESS;
+			if(((xcb_grab_pointer_reply_t*)p)->status!=XCB_GRAB_STATUS_SUCCESS)goto freeflush;
 			free(p);
-			if(y==cz)goto noflush;
 			p=xcb_get_geometry_reply(d,xcb_get_geometry_unchecked(d,*y),0);
 			mx=((xcb_get_geometry_reply_t*)p)->x;
 			my=((xcb_get_geometry_reply_t*)p)->y;
@@ -84,6 +79,7 @@ int main(int argc,char**argv){
 			p=xcb_query_pointer_reply(d,xcb_query_pointer_unchecked(d,rt),0);
 			mx=((xcb_query_pointer_reply_t*)p)->root_x-mx;
 			my=((xcb_query_pointer_reply_t*)p)->root_y-my;
+		freeflush:
 			free(p);
 			goto noflush;
 		stack:
