@@ -56,7 +56,7 @@ int main(int argc,char**argv){
 			mx=((xcb_map_request_event_t*)p)->window;
 			p=xcb_get_window_attributes_reply(d,xcb_get_window_attributes_unchecked(d,mx),0);
 			if(!p)default:goto again;
-			if(((xcb_get_window_attributes_reply_t*)p)->override_redirect||cz-cs==255)goto freeflush;
+			if(((xcb_get_window_attributes_reply_t*)p)->override_redirect)goto freeflush;
 			free(p);
 			for(;x>=cs;x--)
 				if(*x==mx)goto noflush;
@@ -102,7 +102,7 @@ int main(int argc,char**argv){
 				goto main;
 			case 24:goto*(p="urxvt +sb -fn xft:monospace-10 -e bash&",&&cmd);
 			case 25:goto*(p="thunderbird&",&&cmd);
-			case 26:goto*(p="scrot -q 1&",&&cmd);
+			case 27:goto*(p="scrot -q 1&",&&cmd);
 			case 33:goto*(p="halt",&&cmd);
 			case 38:goto*(p="firefox&",&&cmd);
 			case 39:goto*(p="scite&",&&cmd);
