@@ -1,12 +1,13 @@
 #include <stdlib.h>
 #include <sys/wait.h>
 #include <xcb/xcb.h>
+#include <stdio.h>
 void sigchld(int x){
 	if(signal(SIGCHLD,sigchld)!=SIG_ERR)
 		while(0<waitpid(-1,0,WNOHANG));
 }
 int main(int argc,char**argv){
-	static const uint32_t cwa=XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT|XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY|XCB_EVENT_MASK_STRUCTURE_NOTIFY,sma=XCB_STACK_MODE_ABOVE,di[]={0,0,1680,1050};
+	static const uint32_t cwa=XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT|XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY|XCB_EVENT_MASK_STRUCTURE_NOTIFY,di[]={0,0,1680,1050};
 	sigchld(0);
 	xcb_connection_t*d=xcb_connect(0,0);
 	void*p;
@@ -39,17 +40,9 @@ int main(int argc,char**argv){
 		case XCB_CONFIGURE_REQUEST:;
 			uint32_t c[7],*cp=c;
 			for(int i=0;i<5;i++)
-				if(((xcb_configure_request_event_t*)p)->value_mask&1<<i)*cp++=*(uint16_t*)(p+16+i*2);
+				if(((xcb_configure_request_event_t*)p)->value_mask&1<<i)*cp++=*(int16_t*)(p+16+i*2);
 			if(((xcb_configure_request_event_t*)p)->value_mask&XCB_CONFIG_WINDOW_SIBLING)*cp++=((xcb_configure_request_event_t*)p)->sibling;
-			if(((xcb_configure_request_event_t*)p)->value_mask&XCB_CONFIG_WINDOW_STACK_MODE){
-				*cp=((xcb_configure_request_event_t*)p)->stack_mode;
-				for(;x>=cs;x--)
-					if(*x==((xcb_configure_request_event_t*)p)->window)
-						switch(((xcb_configure_request_event_t*)p)->stack_mode){
-						case XCB_STACK_MODE_BELOW:y=cs;
-						case XCB_STACK_MODE_ABOVE:goto stack;
-						}
-			}
+			if(((xcb_configure_request_event_t*)p)->value_mask&XCB_CONFIG_WINDOW_STACK_MODE)*cp=((xcb_configure_request_event_t*)p)->stack_mode;
 			xcb_configure_window(d,((xcb_configure_request_event_t*)p)->window,((xcb_configure_request_event_t*)p)->value_mask,c);
 			goto main;
 		case XCB_MAP_REQUEST:
@@ -62,7 +55,7 @@ int main(int argc,char**argv){
 				if(*x==mx)goto noflush;
 			xcb_map_window(d,*cz++=mx);
 			goto hocus;
-		if(0)case XCB_MOTION_NOTIFY:xcb_configure_window(d,*y,mZ?XCB_CONFIG_WINDOW_WIDTH|XCB_CONFIG_WINDOW_HEIGHT:XCB_CONFIG_WINDOW_X|XCB_CONFIG_WINDOW_Y,(int32_t[]){mZ&&((xcb_motion_notify_event_t*)p)->root_x<=mx?:((xcb_motion_notify_event_t*)p)->root_x-mx,mZ&&((xcb_motion_notify_event_t*)p)->root_y<=my?:((xcb_motion_notify_event_t*)p)->root_y-my});
+		if(0)case XCB_MOTION_NOTIFY:xcb_configure_window(d,*x,mZ?XCB_CONFIG_WINDOW_WIDTH|XCB_CONFIG_WINDOW_HEIGHT:XCB_CONFIG_WINDOW_X|XCB_CONFIG_WINDOW_Y,(int32_t[]){mZ&&((xcb_motion_notify_event_t*)p)->root_x<=mx?:((xcb_motion_notify_event_t*)p)->root_x-mx,mZ&&((xcb_motion_notify_event_t*)p)->root_y<=my?:((xcb_motion_notify_event_t*)p)->root_y-my});
 		else case XCB_BUTTON_RELEASE:xcb_ungrab_pointer(d,XCB_CURRENT_TIME);
 		goto main;
 		case XCB_UNMAP_NOTIFY:unmap:goto*(x<cs?&&noflush:*x==((xcb_unmap_notify_event_t*)p)->window&&--cz>cs?&&stack:(x--,&&unmap));
@@ -87,7 +80,7 @@ int main(int argc,char**argv){
 			for(;x!=y;x+=x<y?:-1)*x=x[x<y?:-1];
 			*x=mx;
 			hocus:x=cz-1;
-			xcb_configure_window(d,*x,XCB_CONFIG_WINDOW_STACK_MODE,&sma);
+			xcb_configure_window(d,*x,XCB_CONFIG_WINDOW_STACK_MODE,di);
 			pocus:xcb_set_input_focus(d,XCB_INPUT_FOCUS_POINTER_ROOT,*x,XCB_CURRENT_TIME);
 			if(!(mz&128))goto main;
 			switch(mz&=127){
@@ -98,7 +91,7 @@ int main(int argc,char**argv){
 				y=tx;
 				tx=mz==23?(y!=cs?(y?:x)-1:x):!y||y==x?cs:y+1;
 				if(y&&y<cz-1)xcb_configure_window(d,*y,XCB_CONFIG_WINDOW_SIBLING|XCB_CONFIG_WINDOW_STACK_MODE,(uint32_t[]){y[mz==23?:-1],mz==23?XCB_STACK_MODE_BELOW:XCB_STACK_MODE_ABOVE});
-				xcb_configure_window(d,*tx,XCB_CONFIG_WINDOW_STACK_MODE,&sma);
+				xcb_configure_window(d,*tx,XCB_CONFIG_WINDOW_STACK_MODE,di);
 				goto main;
 			case 24:goto*(p="urxvt +sb -fn xft:monospace-10 -e bash&",&&cmd);
 			case 25:goto*(p="thunderbird&",&&cmd);
