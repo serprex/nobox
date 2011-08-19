@@ -18,7 +18,7 @@ int main(int argc,char**argv){
 		xcb_grab_key(d,1,rt,i,XCB_GRAB_ANY,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC);
 		xcb_grab_button(d,1,rt,XCB_EVENT_MASK_BUTTON_PRESS,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC,XCB_NONE,XCB_NONE,XCB_GRAB_ANY,i);
 	}
-	xcb_generic_event_t*e=malloc(1);
+	xcb_generic_event_t*e=0;
 	main:xcb_flush(d);
 	noflush:x=y=cz-1;
 	again:free(e);
