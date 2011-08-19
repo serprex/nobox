@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <sys/wait.h>
 #include <xcb/xcb.h>
-#include <stdio.h>
 void sigchld(int x){
 	if(signal(SIGCHLD,sigchld)!=SIG_ERR)
 		while(0<waitpid(-1,0,WNOHANG));
@@ -11,6 +10,7 @@ int main(int argc,char**argv){
 	sigchld(0);
 	xcb_connection_t*d=xcb_connect(0,0);
 	void*p;
+	xcb_generic_event_t*e=malloc(1);
 	int32_t*x,*y,*tx=0,mx,my,rt=xcb_setup_roots_iterator(xcb_get_setup(d)).data->root,cs[255],*cz=cs;
 	uint8_t mz,mZ;
 	xcb_change_window_attributes(d,rt,XCB_CW_EVENT_MASK,&cwa);
@@ -21,44 +21,44 @@ int main(int argc,char**argv){
 	}
 	main:xcb_flush(d);
 	noflush:x=y=cz-1;
-	again:switch(((xcb_generic_event_t*)(p=xcb_wait_for_event(d)))->response_type&127){
+	again:free(e);
+	switch((e=xcb_wait_for_event(d))->response_type&127){
 		case XCB_BUTTON_PRESS:
 			for(;x>=cs;x--)
-				if(*x==((xcb_button_press_event_t*)p)->child){
-					if(((xcb_key_press_event_t*)p)->detail==2)goto pocus;
+				if(*x==((xcb_button_press_event_t*)e)->child){
+					if(((xcb_key_press_event_t*)e)->detail==2)goto pocus;
 					case XCB_KEY_PRESS:
-					mz=128|((xcb_key_press_event_t*)p)->detail;
-					my=((xcb_key_press_event_t*)p)->state;
+					mz=128|((xcb_key_press_event_t*)e)->detail;
+					my=((xcb_key_press_event_t*)e)->state;
 					goto stack;
 				}
 			goto noflush;
 		case XCB_KEY_RELEASE:
-			if(((xcb_key_press_event_t*)p)->detail!=64||!tx)goto again;
+			if(((xcb_key_press_event_t*)e)->detail!=64||!tx)default:goto again;
 			xt:x=tx;
 			tx=0;
 			goto stack;
 		case XCB_CONFIGURE_REQUEST:;
 			uint32_t c[7],*cp=c;
 			for(int i=0;i<5;i++)
-				if(((xcb_configure_request_event_t*)p)->value_mask&1<<i)*cp++=*(int16_t*)(p+16+i*2);
-			if(((xcb_configure_request_event_t*)p)->value_mask&XCB_CONFIG_WINDOW_SIBLING)*cp++=((xcb_configure_request_event_t*)p)->sibling;
-			if(((xcb_configure_request_event_t*)p)->value_mask&XCB_CONFIG_WINDOW_STACK_MODE)*cp=((xcb_configure_request_event_t*)p)->stack_mode;
-			xcb_configure_window(d,((xcb_configure_request_event_t*)p)->window,((xcb_configure_request_event_t*)p)->value_mask,c);
+				if(((xcb_configure_request_event_t*)e)->value_mask&1<<i)*cp++=*(int16_t*)(((void*)e)+16+i*2);
+			if(((xcb_configure_request_event_t*)e)->value_mask&XCB_CONFIG_WINDOW_SIBLING)*cp++=((xcb_configure_request_event_t*)e)->sibling;
+			if(((xcb_configure_request_event_t*)e)->value_mask&XCB_CONFIG_WINDOW_STACK_MODE)*cp=((xcb_configure_request_event_t*)e)->stack_mode;
+			xcb_configure_window(d,((xcb_configure_request_event_t*)e)->window,((xcb_configure_request_event_t*)e)->value_mask,c);
 			goto main;
 		case XCB_MAP_REQUEST:
-			mx=((xcb_map_request_event_t*)p)->window;
+			mx=((xcb_map_request_event_t*)e)->window;
 			p=xcb_get_window_attributes_reply(d,xcb_get_window_attributes_unchecked(d,mx),0);
-			if(!p)default:goto again;
 			if(((xcb_get_window_attributes_reply_t*)p)->override_redirect)goto freeflush;
 			free(p);
 			for(;x>=cs;x--)
 				if(*x==mx)goto noflush;
 			xcb_map_window(d,*cz++=mx);
 			goto hocus;
-		if(0)case XCB_MOTION_NOTIFY:xcb_configure_window(d,*x,mZ?XCB_CONFIG_WINDOW_WIDTH|XCB_CONFIG_WINDOW_HEIGHT:XCB_CONFIG_WINDOW_X|XCB_CONFIG_WINDOW_Y,(int32_t[]){mZ&&((xcb_motion_notify_event_t*)p)->root_x<=mx?:((xcb_motion_notify_event_t*)p)->root_x-mx,mZ&&((xcb_motion_notify_event_t*)p)->root_y<=my?:((xcb_motion_notify_event_t*)p)->root_y-my});
+		if(0)case XCB_MOTION_NOTIFY:xcb_configure_window(d,*x,mZ?XCB_CONFIG_WINDOW_WIDTH|XCB_CONFIG_WINDOW_HEIGHT:XCB_CONFIG_WINDOW_X|XCB_CONFIG_WINDOW_Y,(int32_t[]){mZ&&((xcb_motion_notify_event_t*)e)->root_x<=mx?:((xcb_motion_notify_event_t*)e)->root_x-mx,mZ&&((xcb_motion_notify_event_t*)e)->root_y<=my?:((xcb_motion_notify_event_t*)e)->root_y-my});
 		else case XCB_BUTTON_RELEASE:xcb_ungrab_pointer(d,XCB_CURRENT_TIME);
 		goto main;
-		case XCB_UNMAP_NOTIFY:unmap:goto*(x<cs?&&noflush:*x==((xcb_unmap_notify_event_t*)p)->window&&--cz>cs?&&stack:(x--,&&unmap));
+		case XCB_UNMAP_NOTIFY:unmap:goto*(x<cs?&&noflush:*x==((xcb_unmap_notify_event_t*)e)->window&&--cz>cs?&&stack:(x--,&&unmap));
 		}
 		mvsz:
 			p=xcb_grab_pointer_reply(d,xcb_grab_pointer_unchecked(d,0,rt,XCB_EVENT_MASK_BUTTON_RELEASE|XCB_EVENT_MASK_POINTER_MOTION,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC,XCB_NONE,XCB_NONE,XCB_CURRENT_TIME),0);
