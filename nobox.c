@@ -41,12 +41,27 @@ int main(int argc,char**argv){
 		case XCB_CONFIGURE_REQUEST:;
 			uint32_t c[7];
 			p=c;
-			for(int i=0;i<5;i++)
-				if(((xcb_configure_request_event_t*)e)->value_mask&1<<i){*(uint32_t*)p=*(int16_t*)(((void*)e)+16+i*2);p+=4;}
+			for(mz=0;mz<5;mz++)
+				if(((xcb_configure_request_event_t*)e)->value_mask&1<<mz){*(uint32_t*)p=*(int16_t*)(((void*)e)+16+mz*2);p+=4;}
 			if(((xcb_configure_request_event_t*)e)->value_mask&XCB_CONFIG_WINDOW_SIBLING){*(uint32_t*)p=((xcb_configure_request_event_t*)e)->sibling;p+=4;}
-			if(((xcb_configure_request_event_t*)e)->value_mask&XCB_CONFIG_WINDOW_STACK_MODE)*(uint32_t*)p=((xcb_configure_request_event_t*)e)->stack_mode;
+			if(mz=((xcb_configure_request_event_t*)e)->value_mask&XCB_CONFIG_WINDOW_STACK_MODE)*(uint32_t*)p=((xcb_configure_request_event_t*)e)->stack_mode;
 			xcb_configure_window(d,((xcb_configure_request_event_t*)e)->window,((xcb_configure_request_event_t*)e)->value_mask,c);
-			goto main;
+			if(mz){
+				p=xcb_query_tree_reply(d,xcb_query_tree_unchecked(d,rt),0);
+				int32_t*cl=p+32+((xcb_query_tree_reply_t*)p)->children_len*4;
+				for(y=p+32;y<cl;y++){
+					for(x=cs;x<cz;x++)
+						if(*x==*y)goto nono;
+					*y=0;
+					nono:;
+				}
+				x=cs;
+				for(y=p+32;y<cl;y++)
+					if(*y)*x++=*y;
+				free(p);
+				x--;
+				goto pocus;
+			}else goto main;
 		case XCB_MAP_REQUEST:
 			p=xcb_get_window_attributes_reply(d,xcb_get_window_attributes_unchecked(d,((xcb_map_request_event_t*)e)->window),0);
 			if(((xcb_get_window_attributes_reply_t*)p)->override_redirect)goto freeflush;
@@ -90,7 +105,7 @@ int main(int argc,char**argv){
 				if(cz-cs<2)goto main;
 				y=tx;
 				tx=mz==23?(y!=cs?(y?:x)-1:x):!y||y==x?cs:y+1;
-				if(y&&y<cz-1)xcb_configure_window(d,*y,XCB_CONFIG_WINDOW_SIBLING|XCB_CONFIG_WINDOW_STACK_MODE,(uint32_t[]){y[mz==23?:-1],mz==23?XCB_STACK_MODE_BELOW:XCB_STACK_MODE_ABOVE});
+				if(y&&y<cz-1)xcb_configure_window(d,*y,XCB_CONFIG_WINDOW_SIBLING|XCB_CONFIG_WINDOW_STACK_MODE,(uint32_t[]){y[mz==23?:-1],mz==23});
 				xcb_configure_window(d,*tx,XCB_CONFIG_WINDOW_STACK_MODE,di);
 				goto main;
 			case 24:goto*(p="urxvt +sb -fn xft:monospace-10 -e bash&",&&cmd);
