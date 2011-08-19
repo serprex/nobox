@@ -12,7 +12,7 @@ nobox uses three headers: stdlib for system, sys/wait for sigchld, and then xcb/
 sigchld ripped from dwm. Kills zombies
 static const because inline has GCC pushing the constants on the stack with wasteful writes
 xcb_connect is called after sigchld because the former's return value is used immediately, so there isn't as much register shuffling
-grab_key mess sets up receiving alt releases and modifier grabbing. Leaves tx as null afterwards
+grab_key mess sets up receiving alt releases and modifier grabbing
 
 MAP_REQUEST basically explains the structure of cs. After reading case 23:case 49:, tx can be understood. x and y are used mainly for window shuffling. This is underlined by stack's ABI. mz carries a flag to cover for when the user issues a command. mx and my are used by the resize/move functions. stack happens to have subsections, and is designed that jumping to its tail can function (hocus puts x on top, without the shuffle, while pocus sticks to input focus for Mclick)
 
