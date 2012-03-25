@@ -6,7 +6,7 @@ void sigchld(int x){
 		while(0<waitpid(-1,0,WNOHANG));
 }
 int main(int argc,char**argv){
-	static const uint32_t cwa=XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT|XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY|XCB_EVENT_MASK_STRUCTURE_NOTIFY,di[]={0,0,1680,1050};
+	static const uint32_t di[]={0,0,1680,1050},cwa=XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT|XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY|XCB_EVENT_MASK_STRUCTURE_NOTIFY;
 	sigchld(0);
 	xcb_connection_t*d=xcb_connect(0,0);
 	void*p;
@@ -111,6 +111,7 @@ int main(int argc,char**argv){
 			case 24:goto*(p="urxvt +sb -fn xft:monospace-10 -e bash&",&&cmd);
 			case 25:goto*(p="thunderbird&",&&cmd);
 			case 27:goto*(p="scrot -q 1&",&&cmd);
+			case 32:goto*(p="killall nobox",&&cmd);
 			case 33:goto*(p="halt",&&cmd);
 			case 38:goto*(p="firefox&",&&cmd);
 			case 39:goto*(p="scite&",&&cmd);
@@ -132,7 +133,7 @@ int main(int argc,char**argv){
 				if(mx==-1)xcb_kill_client(d,*y);
 				free(p);
 				goto main;
-			case 54:p="urxvt +sb -fn xft:monospace-14 -geometry 29x2+500+500 -e sh -c 'date;sleep 1'&";
+			case 54:p="urxvt +sb -fn xft:monospace-16 -geometry 32x2+500+500 -e sh -c 'date;sleep 1'&";
 			cmd:system(p);
 			default:goto main;
 			}
