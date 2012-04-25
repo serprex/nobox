@@ -6,6 +6,7 @@ WinKey modifier 8. Note that stealing alt from the clients is for alttab's relea
 Lclick1 Alt drag, brings to top. Win maximizes. Mclick2 Input focus without bringing to top. Rclick3 Alt resize, brings to top. Win close
 Tab23/~49 While holding alt, repeated clicks will cycle windows. ~ cycles backwards
 The following are trivial to change: q24 urxvt w25 thunderbird e26 scrot p33 shutdown a38 firefox s39 scite j44 maximize l46 close c54 clock
+nb resolution is hardcoded for maximizing. Change di on main's first line
 
 code Part of me wants to make nobox.c into that literate programming style, but citing a past explanation seems easier
 nobox uses three headers: stdlib for system, sys/wait for sigchld, and then xcb/xcb for everything else

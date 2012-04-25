@@ -55,11 +55,10 @@ int main(int argc,char**argv){
 					*y=0;
 					nono:;
 				}
-				x=cs;
+				x=cs-1;
 				for(y=p+32;y<cl;y++)
-					if(*y)*x++=*y;
+					if(*y)*++x=*y;
 				free(p);
-				x--;
 				goto pocus;
 			}else goto main;
 		case XCB_MAP_REQUEST:
@@ -129,7 +128,7 @@ int main(int argc,char**argv){
 				free(p);
 				p=xcb_get_property_reply(d,xcb_get_property_unchecked(d,0,*y,mx,XCB_ATOM_ATOM,0,-1),0);
 				xcb_send_event(d,0,*y,XCB_EVENT_MASK_NO_EVENT,(void*)(xcb_client_message_event_t[]){{.response_type=XCB_CLIENT_MESSAGE,.window=*y,.type=mx,.format=32,.data.data32={my,XCB_CURRENT_TIME}}});
-				for(mx=(xcb_get_property_value_length(p)>>2)-1;((uint32_t*)xcb_get_property_value(p))[mx]!=my&&mx>-1;mx--);
+				for(mx=(xcb_get_property_value_length(p)>>2)-1;mx>-1&&((uint32_t*)xcb_get_property_value(p))[mx]!=my;mx--);
 				if(mx==-1)xcb_kill_client(d,*y);
 				free(p);
 				goto main;
