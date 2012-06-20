@@ -1,10 +1,8 @@
 #include <stdlib.h>
-#include <sys/signal.h>
+#include <sys/wait.h>
 #include <xcb/xcb.h>
 int main(int argc,char**argv){
 	static const uint32_t di[]={0,0,1680,1050},cwa=XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT|XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY|XCB_EVENT_MASK_STRUCTURE_NOTIFY;
-	static const struct sigaction sa={.sa_handler=SIG_IGN,.sa_flags=SA_NOCLDWAIT};
-	sigaction(SIGCHLD,&sa,0);
 	xcb_connection_t*d=xcb_connect(0,0);
 	void*p;
 	int32_t*x,*y,*tx=0,mx,my,rt=xcb_setup_roots_iterator(xcb_get_setup(d)).data->root,cs[255],*cz=cs;
@@ -17,6 +15,7 @@ int main(int argc,char**argv){
 	}
 	xcb_generic_event_t*e=0;
 	main:xcb_flush(d);
+	waitpid(-1,0,WNOHANG);
 	noflush:x=y=cz-1;
 	again:free(e);
 	switch((e=xcb_wait_for_event(d))->response_type&127){
