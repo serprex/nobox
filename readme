@@ -10,7 +10,6 @@ nb resolution is hardcoded for maximizing. Change di on main's first line
 
 code Part of me wants to make nobox.c into that literate programming style, but citing a past explanation seems easier
 nobox uses three headers: stdlib for system, sys/wait for sigchld, and then xcb/xcb for everything else
-sigchld ripped from dwm. Kills zombies
 static const because inline has GCC pushing the constants on the stack with wasteful writes
 xcb_connect is called after sigchld because the former's return value is used immediately, so there isn't as much register shuffling
 grab_key mess sets up receiving alt releases and modifier grabbing

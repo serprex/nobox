@@ -3,7 +3,7 @@
 #include <xcb/xcb.h>
 int main(int argc,char**argv){
 	static const uint32_t di[]={0,0,1680,1050},cwa=XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT|XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY|XCB_EVENT_MASK_STRUCTURE_NOTIFY;
-	static const struct sigaction sa={.sa_handler = SIG_IGN,.sa_flags = SA_NOCLDWAIT};
+	static const struct sigaction sa={.sa_handler=SIG_IGN,.sa_flags=SA_NOCLDWAIT};
 	sigaction(SIGCHLD,&sa,0);
 	xcb_connection_t*d=xcb_connect(0,0);
 	void*p;
