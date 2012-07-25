@@ -1,6 +1,9 @@
 #include <stdlib.h>
 #include <sys/wait.h>
 #include <xcb/xcb.h>
+#ifdef COMPOSITE
+#include <xcb/composite.h>
+#endif
 int main(int argc,char**argv){
 	static const uint32_t di[]={0,0,1680,1050},cwa=XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT|XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY|XCB_EVENT_MASK_STRUCTURE_NOTIFY;
 	xcb_connection_t*d=xcb_connect(0,0);
@@ -13,6 +16,9 @@ int main(int argc,char**argv){
 		xcb_grab_key(d,1,rt,i,XCB_GRAB_ANY,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC);
 		xcb_grab_button(d,1,rt,XCB_EVENT_MASK_BUTTON_PRESS,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC,XCB_NONE,XCB_NONE,XCB_GRAB_ANY,i);
 	}
+	#ifdef COMPOSITE
+	xcb_composite_redirect_subwindows(d,rt,XCB_COMPOSITE_REDIRECT_AUTOMATIC);
+	#endif
 	xcb_generic_event_t*e=0;
 	main:xcb_flush(d);
 	waitpid(-1,0,WNOHANG);
@@ -103,13 +109,14 @@ int main(int argc,char**argv){
 				if(y&&y<cz-1)xcb_configure_window(d,*y,XCB_CONFIG_WINDOW_SIBLING|XCB_CONFIG_WINDOW_STACK_MODE,(uint32_t[]){y[mz==23?:-1],mz==23});
 				xcb_configure_window(d,*tx,XCB_CONFIG_WINDOW_STACK_MODE,di);
 				goto main;
-			case 24:goto*(p="urxvt +sb -fn xft:monospace-10 -e bash&",&&cmd);
+			case 24:goto*(p="urxvt +sb -fn xft:monospace-9 -e bash&",&&cmd);
 			case 25:goto*(p="thunderbird&",&&cmd);
 			case 27:goto*(p="scrot -q 1&",&&cmd);
 			case 32:goto*(p="killall nobox",&&cmd);
 			case 33:goto*(p="halt",&&cmd);
 			case 38:goto*(p="firefox&",&&cmd);
 			case 39:goto*(p="scite&",&&cmd);
+			case 40:goto*(p="gimp&",&&cmd);
 			case 44:full:
 				if(cz>cs)xcb_configure_window(d,*y,XCB_CONFIG_WINDOW_X|XCB_CONFIG_WINDOW_Y|XCB_CONFIG_WINDOW_WIDTH|XCB_CONFIG_WINDOW_HEIGHT,di);
 				goto main;
