@@ -8,7 +8,7 @@ int main(int argc,char**argv){
 	static const uint32_t di[]={0,0,1680,1050},cwa=XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT|XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY|XCB_EVENT_MASK_STRUCTURE_NOTIFY;
 	xcb_connection_t*d=xcb_connect(0,0);
 	void*p;
-	int32_t*x,*y,*tx=0,mx,my,rt=xcb_setup_roots_iterator(xcb_get_setup(d)).data->root,cs[255],*cz=cs;
+	int32_t*x,*y,*tx=0,mx,my,rt=xcb_setup_roots_iterator(xcb_get_setup(d)).data->root,cs[255],*cz=cs+1;
 	uint8_t mz,mZ;
 	xcb_change_window_attributes(d,rt,XCB_CW_EVENT_MASK,&cwa);
 	xcb_grab_key(d,1,rt,0,64,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC);
@@ -26,7 +26,7 @@ int main(int argc,char**argv){
 	again:free(e);
 	switch((e=xcb_wait_for_event(d))->response_type&127){
 		case XCB_BUTTON_PRESS:
-			for(;x>=cs;x--)
+			for(;x>cs;x--)
 				if(*x==((xcb_button_press_event_t*)e)->child){
 					if(((xcb_key_press_event_t*)e)->detail==2)goto pocus;
 					case XCB_KEY_PRESS:
@@ -52,12 +52,12 @@ int main(int argc,char**argv){
 				p=xcb_query_tree_reply(d,xcb_query_tree_unchecked(d,rt),0);
 				int32_t*cl=p+32+((xcb_query_tree_reply_t*)p)->children_len*4;
 				for(y=p+32;y<cl;y++){
-					for(x=cs;x<cz;x++)
+					for(x=cs+1;x<cz;x++)
 						if(*x==*y)goto nono;
 					*y=0;
 					nono:;
 				}
-				x=cs-1;
+				x=cs;
 				for(y=p+32;y<cl;y++)
 					if(*y)*++x=*y;
 				free(p);
@@ -67,14 +67,14 @@ int main(int argc,char**argv){
 			p=xcb_get_window_attributes_reply(d,xcb_get_window_attributes_unchecked(d,((xcb_map_request_event_t*)e)->window),0);
 			if(((xcb_get_window_attributes_reply_t*)p)->override_redirect)goto freeflush;
 			free(p);
-			for(;x>=cs;x--)
+			for(;x>cs;x--)
 				if(*x==((xcb_map_request_event_t*)e)->window)goto noflush;
 			xcb_map_window(d,*cz++=((xcb_map_request_event_t*)e)->window);
 			goto hocus;
 		if(0)case XCB_MOTION_NOTIFY:xcb_configure_window(d,*x,mZ?XCB_CONFIG_WINDOW_WIDTH|XCB_CONFIG_WINDOW_HEIGHT:XCB_CONFIG_WINDOW_X|XCB_CONFIG_WINDOW_Y,(int32_t[]){mZ&&((xcb_motion_notify_event_t*)e)->root_x<=mx?:((xcb_motion_notify_event_t*)e)->root_x-mx,mZ&&((xcb_motion_notify_event_t*)e)->root_y<=my?:((xcb_motion_notify_event_t*)e)->root_y-my});
 		else case XCB_BUTTON_RELEASE:xcb_ungrab_pointer(d,XCB_CURRENT_TIME);
 		goto main;
-		case XCB_UNMAP_NOTIFY:unmap:goto*(x<cs?&&noflush:*x==((xcb_unmap_notify_event_t*)e)->window&&--cz>cs?&&stack:(x--,&&unmap));
+		case XCB_UNMAP_NOTIFY:unmap:goto*(x==cs?&&noflush:*x==((xcb_unmap_notify_event_t*)e)->window&&--cz>cs+1?&&stack:(x--,&&unmap));
 		}
 		mvsz:
 			p=xcb_grab_pointer_reply(d,xcb_grab_pointer_unchecked(d,0,rt,XCB_EVENT_MASK_BUTTON_RELEASE|XCB_EVENT_MASK_POINTER_MOTION,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC,XCB_NONE,XCB_NONE,XCB_CURRENT_TIME),0);
@@ -103,9 +103,9 @@ int main(int argc,char**argv){
 			case 1:goto*(my==XCB_MOD_MASK_1?&&mvsz:&&full);
 			case 3:goto*(my==XCB_MOD_MASK_1?&&mvsz:&&shut);
 			case 23:case 49:
-				if(cz-cs<2)goto main;
+				if(cz-cs<3)goto main;
 				y=tx;
-				tx=mz==23?(y!=cs?(y?:x)-1:x):!y||y==x?cs:y+1;
+				tx=mz==23?(y!=cs+1?(y?:x)-1:x):!y||y==x?cs+1:y+1;
 				if(y&&y<cz-1)xcb_configure_window(d,*y,XCB_CONFIG_WINDOW_SIBLING|XCB_CONFIG_WINDOW_STACK_MODE,(uint32_t[]){y[mz==23?:-1],mz==23});
 				xcb_configure_window(d,*tx,XCB_CONFIG_WINDOW_STACK_MODE,di);
 				goto main;
@@ -118,10 +118,10 @@ int main(int argc,char**argv){
 			case 39:goto*(p="scite&",&&cmd);
 			case 40:goto*(p="gimp&",&&cmd);
 			case 44:full:
-				if(cz>cs)xcb_configure_window(d,*y,XCB_CONFIG_WINDOW_X|XCB_CONFIG_WINDOW_Y|XCB_CONFIG_WINDOW_WIDTH|XCB_CONFIG_WINDOW_HEIGHT,di);
+				if(cz>cs+1)xcb_configure_window(d,*y,XCB_CONFIG_WINDOW_X|XCB_CONFIG_WINDOW_Y|XCB_CONFIG_WINDOW_WIDTH|XCB_CONFIG_WINDOW_HEIGHT,di);
 				goto main;
 			case 46:shut:
-				if(cz==cs)goto main;
+				if(cz==cs+1)goto main;
 				if(tx)goto*(mz|=128,&&xt);
 				p=xcb_intern_atom_reply(d,xcb_intern_atom_unchecked(d,0,12,"WM_PROTOCOLS"),0);
 				mx=((xcb_intern_atom_reply_t*)p)->atom;
