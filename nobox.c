@@ -106,7 +106,7 @@ kcode:switch(mz&=127){
 		if(y&&y<cz-1)xcb_configure_window(d,*y,XCB_CONFIG_WINDOW_SIBLING|XCB_CONFIG_WINDOW_STACK_MODE,(uint32_t[]){y[mz==23?:-1],mz==23});
 		xcb_configure_window(d,*tx,XCB_CONFIG_WINDOW_STACK_MODE,di);
 		goto main;
-	case 24:goto*(p="urxvt +sb -fn xft:monospace-9 -e bash&",&&cmd);
+	case 24:goto*(p="urxvt&",&&cmd);
 	case 25:goto*(p="thunderbird&",&&cmd);
 	case 27:goto*(p="scrot -q 1&",&&cmd);
 	case 32:goto*(p="killall nobox",&&cmd);
