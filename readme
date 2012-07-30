@@ -1,24 +1,23 @@
-The reductio ad absurdum of *box minimalism. It might be the illegible terseness of the code, the lack of any rendering causing the startup screen to be void, or the lack of using any other library besides libc and xcb. Whatever it is, it's not
+Reductio ad absurdum of *box minimalism. It might be the illegible terseness of the code, the lack of rendering causing the startup screen to be void, or the lack of any other library besides libc and xcb. Whatever it is, it's not
 
-conf There are some things which are assumed, as the source of nobox uses keycodes directly, rather than keysyms. The source currently assumes the following keycode map, so you'll want to verify with xev
-LeftAlt 64. LeftAlt modifier 64. This is a big one. nobox grabs 64 and doesn't give it back. This makes Alt unavailable to client programs. It also grabs the windows key
-WinKey modifier 8. Note that stealing alt from the clients is for alttab's release, so the winkey isn't stolen. Only combinations with it
-Lclick1 Alt drag, brings to top. Win maximizes. Mclick2 Input focus without bringing to top. Rclick3 Alt resize, brings to top. Win close
-Tab23/~49 While holding alt, repeated clicks will cycle windows. ~ cycles backwards
-The following are trivial to change: q24 urxvt w25 thunderbird e26 scrot p33 shutdown a38 firefox s39 scite j44 maximize l46 close c54 clock
+conf There are assumptions, as nobox's source uses keycodes rather than keysyms. Assumes the following keycode map; verify with xev
+LeftAlt 64. LeftAlt modifier 64. nobox grabs 64 and doesn't give it back. Makes Alt unavailable to client programs. Also grabs Win
+WinKey modifier 8. nb stealing Alt from the clients is for AltTab's release; Win isn't stolen. Only existing combinations
+Lclick1Alt drag, brings to top. Win maximizes. Mclick2 Input focus without bring to top. Rclick3Alt resize, bring to top. Win close
+Tab23/~49 While holding Alt, repeated clicks will cycle windows. ~ cycles backwards
+q24urxvtc w25thunderbird r27scrot o32killnobox p33shutdown a38firefox s39scite d40gimp j44maximize l46close c54clock
 nb resolution is hardcoded for maximizing. Change di on main's first line
 
 code Part of me wants to make nobox.c into that literate programming style, but citing a past explanation seems easier
-nobox uses three headers: stdlib for system, sys/wait for sigchld, and then xcb/xcb for everything else
-static const because inline has GCC pushing the constants on the stack with wasteful writes
-xcb_connect is called after sigchld because the former's return value is used immediately, so there isn't as much register shuffling
-grab_key mess sets up receiving alt releases and modifier grabbing
+nobox's headers: stdlib's system, sys/wait's sigchld, and xcb/xcb
+static const because inline has GCC stack push constants with wasteful writes
+grab_key mess sets receiving Alt releases and mod grabbing
 
-MAP_REQUEST basically explains the structure of cs. After reading case 23:case 49:, tx can be understood. x and y are used mainly for window shuffling. This is underlined by stack's ABI. mz carries a flag to cover for when the user issues a command. mx and my are used by the resize/move functions. stack happens to have subsections, and is designed that jumping to its tail can function (hocus puts x on top, without the shuffle, while pocus sticks to input focus for Mclick)
+tx can be understood by reading case 23:case 49:. x and y are used mainly for window shuffling. This is underlined by stack's ABI. mz carries a flag to cover for when the user issues a command. mx and my are used by mvsz (move/resize). stack happens to have subsections, and is designed so jumping to its tail functions (hocus puts x on top, without the shuffle, while pocus input focuses for Mclick)
 
-tx was added since alt tab requires constant book keeping. The hassle is that it has to bring the possible window on top, all while maintaining the general order (when choosing the next window, put the current one back) So tx is a nullable pointer to the window under consideration
+tx was added since AltTab requires constant book keeping. The hassle is that it has to bring the possible window on top, all while maintaining the general order (when choosing the next window, put the current one back) So tx is a nullable pointer to the window under consideration
 
-MOTION_NOTIFY and BUTTON_RELEASE occur after mvsz. This is the sticky area, where it's assumed that stack and such won't get called between those events (After finding that that assumption holds only to a certain degree, I added mZ to keep a copy of mz's state. Overall, I went with worse is better and let oddities occur if one decides to alt tab while resizing a window) Anywhere else, mx and my can be used as temporary variables or parameters (Like my for the key for commands)
+MOTION_NOTIFY then BUTTON_RELEASE occur after mvsz. This is messy; it's assumed that stack and such won't get called between those events (After finding that that assumption only partially holds, I added mZ to keep a copy of mz's state. Overall, I went with worse is better and let oddities occur if one decides to Alt tab while resizing a window) Anywhere else, mx and my can be used as temporary variables or parameters (Like my for commands' key)
 
 eg dotfiles
 .xinitrc
