@@ -2,7 +2,7 @@ Reductio ad absurdum of *box minimalism. It might be the illegible terseness of 
 
 conf nobox uses keycodes, not keysyms. This is the assumed mapping; verify with xev
 LeftAlt64. nobox grabs 64, thus Alt's unavailable to clients. Also grabs Win
-WinKey modifier 8. nb stealing Alt from the clients is for AltTab's release; Win isn't stolen. Only existing combinations
+Win8. nb stealing Alt from the clients is for AltTab's release; Win isn't stolen, only existing combinations
 Lclick1Alt drag, brings to top. Win maximizes. Mclick2 Input focus without bring to top. Rclick3Alt resize, bring to top. Win close
 Tab23/~49 While holding Alt, repeated clicks will cycle windows. ~ cycles backwards
 q24urxvtc w25thunderbird r27scrot o32killnobox p33shutdown a38firefox s39scite d40gimp j44maximize l46close c54clock
