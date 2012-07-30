@@ -19,3 +19,21 @@ MAP_REQUEST basically explains the structure of cs. After reading case 23:case 4
 tx was added since alt tab requires constant book keeping. The hassle is that it has to bring the possible window on top, all while maintaining the general order (when choosing the next window, put the current one back) So tx is a nullable pointer to the window under consideration
 
 MOTION_NOTIFY and BUTTON_RELEASE occur after mvsz. This is the sticky area, where it's assumed that stack and such won't get called between those events (After finding that that assumption holds only to a certain degree, I added mZ to keep a copy of mz's state. Overall, I went with worse is better and let oddities occur if one decides to alt tab while resizing a window) Anywhere else, mx and my can be used as temporary variables or parameters (Like my for the key for commands)
+
+eg dotfiles
+.xinitrc
+xcompmgr&
+urxvtd -q -f -o
+exec s/nobox/nobox
+
+.Xdefaults
+URxvt.font:xft:monospace-9
+URxvt.fading:1
+URxvt.geometry:96x32+320+296
+URxvt.depth:32
+URxvt.background:[94]#FCFCFC
+URxvt.scrollBar:false
+URxvt.perl-ext-common:default,matcher
+URxvt.urlLauncher:firefox
+URxvt.matcher.button:1
+URxvt.matcher.pattern.1:\\bwww\\.[\\w-]\\.[\\w./?&@#-]*[\\w/-]
