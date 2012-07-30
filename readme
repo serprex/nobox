@@ -1,6 +1,6 @@
 Reductio ad absurdum of *box minimalism. It might be the illegible terseness of the code, the lack of rendering causing the startup screen to be void, or the lack of any other library besides libc and xcb. Whatever it is, it's not
 
-conf There are assumptions, as nobox's source uses keycodes rather than keysyms. Assumes the following keycode map; verify with xev
+conf nobox uses keycodes, not keysyms. This is the assumed mapping; verify with xev
 LeftAlt 64. LeftAlt modifier 64. nobox grabs 64 and doesn't give it back. Makes Alt unavailable to client programs. Also grabs Win
 WinKey modifier 8. nb stealing Alt from the clients is for AltTab's release; Win isn't stolen. Only existing combinations
 Lclick1Alt drag, brings to top. Win maximizes. Mclick2 Input focus without bring to top. Rclick3Alt resize, bring to top. Win close
@@ -8,9 +8,9 @@ Tab23/~49 While holding Alt, repeated clicks will cycle windows. ~ cycles backwa
 q24urxvtc w25thunderbird r27scrot o32killnobox p33shutdown a38firefox s39scite d40gimp j44maximize l46close c54clock
 nb resolution is hardcoded for maximizing. Change di on main's first line
 
-code Part of me wants to make nobox.c into that literate programming style, but citing a past explanation seems easier
+code
 nobox's headers: stdlib's system, sys/wait's sigchld, and xcb/xcb
-static const because inline has GCC stack push constants with wasteful writes
+
 grab_key mess sets receiving Alt releases and mod grabbing
 
 tx can be understood by reading case 23:case 49:. x and y are used mainly for window shuffling. This is underlined by stack's ABI. mz carries a flag to cover for when the user issues a command. mx and my are used by mvsz (move/resize). stack happens to have subsections, and is designed so jumping to its tail functions (hocus puts x on top, without the shuffle, while pocus input focuses for Mclick)
