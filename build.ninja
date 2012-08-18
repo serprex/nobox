@@ -1,0 +1,6 @@
+rule cc
+ command=gcc -std=gnu99 -Os -s -lxcb -march=native -fno-stack-protector -fwhole-program $in -o $out $of
+build nobox:cc nobox.c
+build nobox-compo:cc nobox.c
+ of=-DCOMPOSITE -lxcb-composite
+default nobox
