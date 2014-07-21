@@ -110,10 +110,8 @@ kcode:switch(mz&=127){
 	case 25:goto*(p="thunderbird&",&&cmd);
 	case 27:goto*(p="scrot -q 1&",&&cmd);
 	case 32:goto*(p="killall nobox",&&cmd);
-	case 36:goto*(p="systemctl poweroff",&&cmd);
 	case 38:goto*(p="firefox&",&&cmd);
 	case 39:goto*(p="scite&",&&cmd);
-	case 40:goto*(p="gimp&",&&cmd);
 	case 44:full:
 		if(cz>cs+1)xcb_configure_window(d,*y,XCB_CONFIG_WINDOW_X|XCB_CONFIG_WINDOW_Y|XCB_CONFIG_WINDOW_WIDTH|XCB_CONFIG_WINDOW_HEIGHT,di);
 		goto main;
