@@ -108,7 +108,6 @@ kcode:switch(mz&=127){
 		goto main;
 	case 24:goto*(p="urxvtc&",&&cmd);
 	case 25:goto*(p="thunderbird&",&&cmd);
-	case 27:goto*(p="scrot -q 1&",&&cmd);
 	case 32:goto*(p="killall nobox",&&cmd);
 	case 38:goto*(p="firefox&",&&cmd);
 	case 39:goto*(p="scite&",&&cmd);
