@@ -107,8 +107,7 @@ kcode:switch(mz&=127){
 		xcb_configure_window(d,*tx,XCB_CONFIG_WINDOW_STACK_MODE,di);
 		goto main;
 	case 24:goto*(p="urxvtc&",&&cmd);
-	case 25:goto*(p="thunderbird&",&&cmd);
-	case 32:goto*(p="killall nobox",&&cmd);
+	case 32:return 0;
 	case 38:goto*(p="firefox&",&&cmd);
 	case 39:goto*(p="scite&",&&cmd);
 	case 44:full:
