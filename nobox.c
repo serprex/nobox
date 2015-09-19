@@ -12,10 +12,8 @@ int main(int argc,char**argv){
 	uint8_t mz,mZ;
 	xcb_change_window_attributes(d,rt,XCB_CW_EVENT_MASK,&cwa);
 	xcb_grab_key(d,1,rt,0,64,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC);
-	for(int i=64;i>1;i>>=3){
-		xcb_grab_key(d,1,rt,i,XCB_GRAB_ANY,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC);
-		xcb_grab_button(d,1,rt,XCB_EVENT_MASK_BUTTON_PRESS,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC,XCB_NONE,XCB_NONE,XCB_GRAB_ANY,i);
-	}
+	xcb_grab_key(d,1,rt,8,XCB_GRAB_ANY,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC);
+	xcb_grab_button(d,1,rt,XCB_EVENT_MASK_BUTTON_PRESS,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC,XCB_NONE,XCB_NONE,XCB_GRAB_ANY,8);
 	#ifdef COMPOSITE
 	xcb_composite_redirect_subwindows(d,rt,XCB_COMPOSITE_REDIRECT_AUTOMATIC);
 	#endif
@@ -97,8 +95,7 @@ hocus:x=cz-1;
 pocus:xcb_set_input_focus(d,XCB_INPUT_FOCUS_POINTER_ROOT,*x,XCB_CURRENT_TIME);
 	if(!(mz&128))goto main;
 kcode:switch(mz&=127){
-	case 1:goto*(my==XCB_MOD_MASK_1?&&mvsz:&&full);
-	case 3:goto*(my==XCB_MOD_MASK_1?&&mvsz:&&shut);
+	case 1:case 3:goto mvsz;
 	case 23:case 49:
 		if(cz-cs<3)goto main;
 		y=tx;
@@ -109,11 +106,10 @@ kcode:switch(mz&=127){
 	case 24:goto*(p="urxvtc&",&&cmd);
 	case 32:return 0;
 	case 38:goto*(p="firefox&",&&cmd);
-	case 39:goto*(p="scite&",&&cmd);
-	case 44:full:
+	case 44:
 		if(cz>cs+1)xcb_configure_window(d,*y,XCB_CONFIG_WINDOW_X|XCB_CONFIG_WINDOW_Y|XCB_CONFIG_WINDOW_WIDTH|XCB_CONFIG_WINDOW_HEIGHT,di);
 		goto main;
-	case 46:shut:
+	case 46:
 		if(cz==cs+1)goto main;
 		if(tx)goto*(mz|=128,&&xt);
 		p=xcb_intern_atom_reply(d,xcb_intern_atom_unchecked(d,0,12,"WM_PROTOCOLS"),0);
