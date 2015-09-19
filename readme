@@ -1,38 +1,15 @@
-Reductio ad absurdum of *box minimalism. It might be the illegible terseness of the code, the lack of rendering causing the startup screen to be void, or the lack of any other library besides libc and xcb. Whatever it is, it's not
+Reductio ad absurdum of *box minimalism. Maybe illegible terseness of code, lack of rendering causing startup screen to be void, or lack of dependencies besides libc & xcb. Whatever it's it's not
 
-conf nobox uses keycodes, not keysyms. This is the assumed mapping; verify with xev
-LeftAlt64. nobox grabs 64, thus Alt's unavailable to clients. Also grabs Win
-Win8. nb stealing Alt from the clients is for AltTab's release; Win isn't stolen, only existing combinations
-Lclick1Alt drag, brings to top. Win maximizes. Mclick2 Input focus without bring to top. Rclick3Alt resize, bring to top. Win close
-Tab23/~49 While holding Alt, repeated clicks will cycle windows. ~ cycles backwards
-q24urxvtc w25thunderbird r27scrot o32killnobox p33shutdown a38firefox s39scite d40gimp j44maximize l46close c54clock
-nb resolution is hardcoded for maximizing. Change di on main's first line
+conf keycodes, not keysyms
+Alt. nobox grabs 8
+B0Alt drag. B1 Input focus without restack. B2Alt restack
+Tab23/~49 Hold Alt, cycle windows. ~ reverse
+q24urxvtc o32exit a38firefox j44full l46close c54clock
+nb Full dimensions hardcoded as di
 
 code
-nobox's headers: stdlib's system, sys/wait's sigchld, and xcb/xcb
+tx handling in case 23:case 49:. x&y used mainly for window shuffling for stack's ABI. mz carries flag to cover for when user issues chord. mx&my used by mvsz. stack has subsections, designed to jumping to tail (hocus lifts x without shuffle; pocus B1 input focus)
 
-grab_key mess sets receiving Alt releases and mod grabbing
+tx for AltTab book keeping. Hassle is ephemeral lift, for maintaining general order (when choosing next window, put current one back). tx points to candidate window
 
-tx can be understood by reading case 23:case 49:. x and y are used mainly for window shuffling. This is underlined by stack's ABI. mz carries a flag to cover for when the user issues a command. mx and my are used by mvsz (move/resize). stack happens to have subsections, and is designed so jumping to its tail functions (hocus puts x on top, without the shuffle, while pocus input focuses for Mclick)
-
-tx was added since AltTab requires constant book keeping. The hassle is that it has to bring the possible window on top, all while maintaining the general order (when choosing the next window, put the current one back) So tx is a nullable pointer to the window under consideration
-
-MOTION_NOTIFY then BUTTON_RELEASE occur after mvsz. This is messy; it's assumed that stack and such won't get called between those events (After finding that that assumption only partially holds, I added mZ to keep a copy of mz's state. Overall, I went with worse is better and let oddities occur if one decides to Alt tab while resizing a window) Anywhere else, mx and my can be used as temporary variables or parameters (Like my for commands' key)
-
-dotfiles
-.xinitrc
-xcompmgr&
-urxvtd -q -f -o
-exec s/nobox/nobox
-
-.Xdefaults
-URxvt.font:xft:monospace-9
-URxvt.fading:1
-URxvt.geometry:96x32+320+296
-URxvt.depth:32
-URxvt.background:[94]#FCFCFC
-URxvt.scrollBar:false
-URxvt.perl-ext-common:default,matcher
-URxvt.urlLauncher:firefox
-URxvt.matcher.button:1
-URxvt.matcher.pattern.1:\\bwww\\.[\\w-]\\.[\\w./?&@#-]*[\\w/-]
+MOTION_NOTIFY&BUTTON_RELEASE occur after mvsz. mZ stores mz's state in case stack executed between events. Oddities occur if AltTab during resize. mx&my are general registers anywhere else
