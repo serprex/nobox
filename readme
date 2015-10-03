@@ -1,4 +1,4 @@
-Reductio ad absurdum of *box minimalism. Maybe illegible terseness of code, lack of rendering causing startup screen to be void, or lack of dependencies besides libc & xcb. Whatever it's it's not
+Reductio ad absurdum of *box minimalism
 
 conf keycodes, not keysyms
 Alt. nobox grabs 8

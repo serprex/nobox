@@ -103,7 +103,7 @@ kcode:switch(mz&=127){
 		if(y&&y<cz-1)xcb_configure_window(d,*y,XCB_CONFIG_WINDOW_SIBLING|XCB_CONFIG_WINDOW_STACK_MODE,(uint32_t[]){y[mz==23?:-1],mz==23});
 		xcb_configure_window(d,*tx,XCB_CONFIG_WINDOW_STACK_MODE,di);
 		goto main;
-	case 24:goto*(p="urxvtc&",&&cmd);
+	case 24:goto*(p="st&",&&cmd);
 	case 32:return 0;
 	case 38:goto*(p="firefox&",&&cmd);
 	case 44:
@@ -125,7 +125,7 @@ kcode:switch(mz&=127){
 		free(p);
 		goto main;
 	case 47:goto*(cz==cs+1?&&main:(p=0,&&killit));
-	case 54:p="urxvtc +sb -fn xft:monospace-16 -geometry 32x2+500+500 -e sh -c 'date;sleep 1'&";
+	case 54:p="st -g 32x2+500+500 -e sh -c 'date;sleep 1'&";
 	cmd:system(p);
 	default:goto main;
 	}
