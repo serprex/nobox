@@ -1,11 +1,7 @@
-Reductio ad absurdum of *box minimalism
-
-conf keycodes, not keysyms
-Alt. nobox grabs 8
-B0Alt drag. B1 Input focus without restack. B2Alt restack
-Tab23/~49 Hold Alt, cycle windows. ~ reverse
-q24urxvtc o32exit a38firefox j44full l46close c54clock
-nb Full dimensions hardcoded as di
+/\\  /\//\\/\ // reductio ad absurdum of *box minimalism
+\\\\//\\\///\\/
+ \\\\\///\\\//\  commands chorded with alt
+  \\/\/\\//\/ \\ see switch in code for mapping
 
 code
 tx handling in case 23:case 49:. x&y used mainly for window shuffling for stack's ABI. mz carries flag to cover for when user issues chord. mx&my used by mvsz. stack has subsections, designed to jumping to tail (hocus lifts x without shuffle; pocus B1 input focus)
