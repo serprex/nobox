@@ -105,7 +105,6 @@ kcode:switch(mz&=127){
 		goto main;
 	case 24:goto*(p="st&",&&cmd);
 	case 32:return 0;
-	case 38:goto*(p="firefox&",&&cmd);
 	case 44:
 		if(cz>cs+1)xcb_configure_window(d,*y,XCB_CONFIG_WINDOW_X|XCB_CONFIG_WINDOW_Y|XCB_CONFIG_WINDOW_WIDTH|XCB_CONFIG_WINDOW_HEIGHT,di);
 		goto main;
