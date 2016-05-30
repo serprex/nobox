@@ -4,8 +4,9 @@
 #ifdef COMPOSITE
 #include <xcb/composite.h>
 #endif
+static const uint32_t di[]={0,0,1680,1050},cwa=XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT|XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY|XCB_EVENT_MASK_STRUCTURE_NOTIFY;
+static uint32_t buf[7];
 int main(int argc,char**argv){
-	static const uint32_t di[]={0,0,1680,1050},cwa=XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT|XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY|XCB_EVENT_MASK_STRUCTURE_NOTIFY;
 	xcb_connection_t*d=xcb_connect(0,0);
 	void*p;
 	int32_t*x,*y,*tx=0,mx,my,rt=xcb_setup_roots_iterator(xcb_get_setup(d)).data->root,cs[255],*cz=cs+1;
@@ -39,13 +40,12 @@ again:free(e);
 		tx=0;
 		goto stack;
 	case XCB_CONFIGURE_REQUEST:;
-		uint32_t c[7];
-		p=c;
+		p=buf;
 		for(mz=0;mz<5;mz++)
 			if(((xcb_configure_request_event_t*)e)->value_mask&1<<mz){*(uint32_t*)p=*(int16_t*)(((void*)e)+16+mz*2);p+=4;}
 		if(((xcb_configure_request_event_t*)e)->value_mask&XCB_CONFIG_WINDOW_SIBLING){*(uint32_t*)p=((xcb_configure_request_event_t*)e)->sibling;p+=4;}
 		if(mz=((xcb_configure_request_event_t*)e)->value_mask&XCB_CONFIG_WINDOW_STACK_MODE)*(uint32_t*)p=((xcb_configure_request_event_t*)e)->stack_mode;
-		xcb_configure_window(d,((xcb_configure_request_event_t*)e)->window,((xcb_configure_request_event_t*)e)->value_mask,c);
+		xcb_configure_window(d,((xcb_configure_request_event_t*)e)->window,((xcb_configure_request_event_t*)e)->value_mask,buf);
 		if(mz){
 			p=xcb_query_tree_reply(d,xcb_query_tree_unchecked(d,rt),0);
 			int32_t*cl=p+32+((xcb_query_tree_reply_t*)p)->children_len*4;
@@ -69,9 +69,14 @@ again:free(e);
 			if(*x==((xcb_map_request_event_t*)e)->window)goto noflush;
 		xcb_map_window(d,*cz++=((xcb_map_request_event_t*)e)->window);
 		goto hocus;
-	if(0)case XCB_MOTION_NOTIFY:xcb_configure_window(d,*x,mZ?XCB_CONFIG_WINDOW_WIDTH|XCB_CONFIG_WINDOW_HEIGHT:XCB_CONFIG_WINDOW_X|XCB_CONFIG_WINDOW_Y,(int32_t[]){mZ&&((xcb_motion_notify_event_t*)e)->root_x<=mx?:((xcb_motion_notify_event_t*)e)->root_x-mx,mZ&&((xcb_motion_notify_event_t*)e)->root_y<=my?:((xcb_motion_notify_event_t*)e)->root_y-my});
-	else case XCB_BUTTON_RELEASE:xcb_ungrab_pointer(d,XCB_CURRENT_TIME);
-	goto main;
+	case XCB_MOTION_NOTIFY:
+		*buf=mZ&&((xcb_motion_notify_event_t*)e)->root_x<=mx?:((xcb_motion_notify_event_t*)e)->root_x-mx;
+		buf[1]=mZ&&((xcb_motion_notify_event_t*)e)->root_y<=my?:((xcb_motion_notify_event_t*)e)->root_y-my;
+		xcb_configure_window(d,*x,mZ?XCB_CONFIG_WINDOW_WIDTH|XCB_CONFIG_WINDOW_HEIGHT:XCB_CONFIG_WINDOW_X|XCB_CONFIG_WINDOW_Y,buf);
+		goto main;
+	case XCB_BUTTON_RELEASE:
+		xcb_ungrab_pointer(d,XCB_CURRENT_TIME);
+		goto main;
 	case XCB_UNMAP_NOTIFY:unmap:goto*(x==cs?&&noflush:*x==((xcb_unmap_notify_event_t*)e)->window&&--cz>cs+1?&&stack:(x--,&&unmap));
 	}
 mvsz:p=xcb_grab_pointer_reply(d,xcb_grab_pointer_unchecked(d,0,rt,XCB_EVENT_MASK_BUTTON_RELEASE|XCB_EVENT_MASK_POINTER_MOTION,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC,XCB_NONE,XCB_NONE,XCB_CURRENT_TIME),0);
@@ -100,7 +105,11 @@ kcode:switch(mz&=127){
 		if(cz-cs<3)goto main;
 		y=tx;
 		tx=mz==23?(y!=cs+1?(y?:x)-1:x):!y||y==x?cs+1:y+1;
-		if(y&&y<cz-1)xcb_configure_window(d,*y,XCB_CONFIG_WINDOW_SIBLING|XCB_CONFIG_WINDOW_STACK_MODE,(uint32_t[]){y[mz==23?:-1],mz==23});
+		if(y&&y<cz-1){
+			*buf=y[mz==23?:-1];
+			buf[1]=mz==23;
+			xcb_configure_window(d,*y,XCB_CONFIG_WINDOW_SIBLING|XCB_CONFIG_WINDOW_STACK_MODE,buf);
+		}
 		xcb_configure_window(d,*tx,XCB_CONFIG_WINDOW_STACK_MODE,di);
 		goto main;
 	case 24:goto*(p="st&",&&cmd);
