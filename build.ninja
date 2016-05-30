@@ -1,5 +1,5 @@
 rule cc
- command=gcc -std=gnu11 -Os -s -lxcb -march=native -fomit-frame-pointer -fno-stack-protector -fwhole-program $in -o $out $of && strip -s -R .comment -R .gnu.version $out
+ command=gcc -std=gnu11 -Os -s -lxcb -march=native -fno-strict-aliasing -fomit-frame-pointer -fno-stack-protector -fwhole-program $in -o $out $of && strip -s -R .comment -R .gnu.version $out
 build nobox:cc nobox.c
 build nobox-compo:cc nobox.c
  of=-DCOMPOSITE -lxcb-composite
