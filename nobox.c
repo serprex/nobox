@@ -81,22 +81,6 @@ again:free(e);
 		goto main;
 	case XCB_UNMAP_NOTIFY:unmap:goto*(x==cs?&&noflush:*x==((xcb_unmap_notify_event_t*)e)->window&&--cz>cs+1?&&stack:(x--,&&unmap));
 	}
-mvsz:{void*p=xcb_grab_pointer_reply(d,xcb_grab_pointer_unchecked(d,0,rt,XCB_EVENT_MASK_BUTTON_RELEASE|XCB_EVENT_MASK_POINTER_MOTION,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC,XCB_NONE,XCB_NONE,XCB_CURRENT_TIME),0);
-	if(((xcb_grab_pointer_reply_t*)p)->status!=XCB_GRAB_STATUS_SUCCESS){
-		free(p);
-		goto noflush;
-	}
-	free(p);
-	p=xcb_get_geometry_reply(d,xcb_get_geometry_unchecked(d,*y),0);
-	mx=((xcb_get_geometry_reply_t*)p)->x;
-	my=((xcb_get_geometry_reply_t*)p)->y;
-	free(p);
-	if(mZ=mz!=1)goto noflush;
-	p=xcb_query_pointer_reply(d,xcb_query_pointer_unchecked(d,rt),0);
-	mx=((xcb_query_pointer_reply_t*)p)->root_x-mx;
-	my=((xcb_query_pointer_reply_t*)p)->root_y-my;
-	free(p);
-	goto noflush;}
 stack:mx=*x;
 	for(;x!=y;x+=x<y?:-1)*x=x[x<y?:-1];
 	*x=mx;
@@ -106,7 +90,24 @@ pocus:xcb_set_input_focus(d,XCB_INPUT_FOCUS_POINTER_ROOT,*x,XCB_CURRENT_TIME);
 	if(!(mz&128))goto main;
 kcode:switch(mz&=127){
 	void*p;
-	case 1:case 3:goto mvsz;
+	case 1:case 3:
+		p=xcb_grab_pointer_reply(d,xcb_grab_pointer_unchecked(d,0,rt,XCB_EVENT_MASK_BUTTON_RELEASE|XCB_EVENT_MASK_POINTER_MOTION,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC,XCB_NONE,XCB_NONE,XCB_CURRENT_TIME),0);
+		if(((xcb_grab_pointer_reply_t*)p)->status!=XCB_GRAB_STATUS_SUCCESS){
+			free(p);
+			goto noflush;
+		}
+		free(p);
+		p=xcb_get_geometry_reply(d,xcb_get_geometry_unchecked(d,*y),0);
+		mx=((xcb_get_geometry_reply_t*)p)->x;
+		my=((xcb_get_geometry_reply_t*)p)->y;
+		free(p);
+		if(mZ=mz==1){
+			p=xcb_query_pointer_reply(d,xcb_query_pointer_unchecked(d,rt),0);
+			mx=((xcb_query_pointer_reply_t*)p)->root_x-mx;
+			my=((xcb_query_pointer_reply_t*)p)->root_y-my;
+			free(p);
+		}
+		goto noflush;
 	case 23:case 49:
 		if(cz-cs<3)goto main;
 		y=tx;
@@ -118,7 +119,6 @@ kcode:switch(mz&=127){
 		}
 		xcb_configure_window(d,*tx,XCB_CONFIG_WINDOW_STACK_MODE,di);
 		goto main;
-	case 24:goto*(p="st&",&&cmd);
 	case 32:return 0;
 	case 44:
 		if(cz>cs+1)xcb_configure_window(d,*y,XCB_CONFIG_WINDOW_X|XCB_CONFIG_WINDOW_Y|XCB_CONFIG_WINDOW_WIDTH|XCB_CONFIG_WINDOW_HEIGHT,di);
@@ -126,10 +126,11 @@ kcode:switch(mz&=127){
 	case 46:
 		if(cz==cs+1)goto main;
 		if(tx)goto*(mz|=128,&&xt);
-		p=xcb_intern_atom_reply(d,xcb_intern_atom_unchecked(d,0,12,"WM_PROTOCOLS"),0);
+		{xcb_intern_atom_cookie_t c1=xcb_intern_atom_unchecked(d,0,12,"WM_PROTOCOLS"),c2=xcb_intern_atom_unchecked(d,0,16,"WM_DELETE_WINDOW");
+		p=xcb_intern_atom_reply(d,c1,0);
 		mx=((xcb_intern_atom_reply_t*)p)->atom;
 		free(p);
-		p=xcb_intern_atom_reply(d,xcb_intern_atom_unchecked(d,0,16,"WM_DELETE_WINDOW"),0);
+		p=xcb_intern_atom_reply(d,c2,0);}
 		my=((xcb_intern_atom_reply_t*)p)->atom;
 		free(p);
 		p=xcb_get_property_reply(d,xcb_get_property_unchecked(d,0,*y,mx,XCB_ATOM_ATOM,0,-1),0);
@@ -139,8 +140,7 @@ kcode:switch(mz&=127){
 		free(p);
 		goto main;
 	case 47:goto*(cz==cs+1?&&main:(p=0,&&killit));
-	case 54:p="st -g 32x2+500+500 -e sh -c 'date;sleep 1'&";
-	cmd:system(p);
+	case 24:case 54:system(mz==24?"st&":"st -g 32x2+500+500 -e sh -c 'date;sleep 1'&");
 	default:goto main;
 	}
 }
