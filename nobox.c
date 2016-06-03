@@ -8,7 +8,6 @@ static const uint32_t di[]={0,0,1680,1050},cwa=XCB_EVENT_MASK_SUBSTRUCTURE_REDIR
 static uint32_t buf[7];
 int main(int argc,char**argv){
 	xcb_connection_t*d=xcb_connect(0,0);
-	void*p;
 	int32_t*x,*y,*tx=0,mx,my,rt=xcb_setup_roots_iterator(xcb_get_setup(d)).data->root,cs[255],*cz=cs+1;
 	uint8_t mz,mZ;
 	xcb_change_window_attributes(d,rt,XCB_CW_EVENT_MASK,&cwa);
@@ -21,7 +20,7 @@ int main(int argc,char**argv){
 	xcb_generic_event_t*e=0;
 main:xcb_flush(d);
 	waitpid(-1,0,WNOHANG);
-	noflush:x=y=cz-1;
+noflush:x=y=cz-1;
 again:free(e);
 	switch((e=xcb_wait_for_event(d))->response_type&127){
 	case XCB_BUTTON_PRESS:
@@ -39,8 +38,8 @@ again:free(e);
 		xt:x=tx;
 		tx=0;
 		goto stack;
-	case XCB_CONFIGURE_REQUEST:;
-		p=buf;
+	case XCB_CONFIGURE_REQUEST:{
+		void*p=buf;
 		for(mz=0;mz<5;mz++)
 			if(((xcb_configure_request_event_t*)e)->value_mask&1<<mz){*(uint32_t*)p=*(int16_t*)(((void*)e)+16+mz*2);p+=4;}
 		if(((xcb_configure_request_event_t*)e)->value_mask&XCB_CONFIG_WINDOW_SIBLING){*(uint32_t*)p=((xcb_configure_request_event_t*)e)->sibling;p+=4;}
@@ -60,15 +59,18 @@ again:free(e);
 				if(*y)*++x=*y;
 			free(p);
 			goto pocus;
-		}else goto main;
-	case XCB_MAP_REQUEST:
-		p=xcb_get_window_attributes_reply(d,xcb_get_window_attributes_unchecked(d,((xcb_map_request_event_t*)e)->window),0);
-		if(((xcb_get_window_attributes_reply_t*)p)->override_redirect)goto freeflush;
+		}else goto main;}
+	case XCB_MAP_REQUEST:{
+		void*p=xcb_get_window_attributes_reply(d,xcb_get_window_attributes_unchecked(d,((xcb_map_request_event_t*)e)->window),0);
+		if(((xcb_get_window_attributes_reply_t*)p)->override_redirect){
+			free(p);
+			goto pocus;
+		}
 		free(p);
 		for(;x>cs;x--)
 			if(*x==((xcb_map_request_event_t*)e)->window)goto noflush;
 		xcb_map_window(d,*cz++=((xcb_map_request_event_t*)e)->window);
-		goto hocus;
+		goto hocus;}
 	case XCB_MOTION_NOTIFY:
 		*buf=mZ&&((xcb_motion_notify_event_t*)e)->root_x<=mx?:((xcb_motion_notify_event_t*)e)->root_x-mx;
 		buf[1]=mZ&&((xcb_motion_notify_event_t*)e)->root_y<=my?:((xcb_motion_notify_event_t*)e)->root_y-my;
@@ -79,8 +81,11 @@ again:free(e);
 		goto main;
 	case XCB_UNMAP_NOTIFY:unmap:goto*(x==cs?&&noflush:*x==((xcb_unmap_notify_event_t*)e)->window&&--cz>cs+1?&&stack:(x--,&&unmap));
 	}
-mvsz:p=xcb_grab_pointer_reply(d,xcb_grab_pointer_unchecked(d,0,rt,XCB_EVENT_MASK_BUTTON_RELEASE|XCB_EVENT_MASK_POINTER_MOTION,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC,XCB_NONE,XCB_NONE,XCB_CURRENT_TIME),0);
-	if(((xcb_grab_pointer_reply_t*)p)->status!=XCB_GRAB_STATUS_SUCCESS)goto freeflush;
+mvsz:{void*p=xcb_grab_pointer_reply(d,xcb_grab_pointer_unchecked(d,0,rt,XCB_EVENT_MASK_BUTTON_RELEASE|XCB_EVENT_MASK_POINTER_MOTION,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC,XCB_NONE,XCB_NONE,XCB_CURRENT_TIME),0);
+	if(((xcb_grab_pointer_reply_t*)p)->status!=XCB_GRAB_STATUS_SUCCESS){
+		free(p);
+		goto noflush;
+	}
 	free(p);
 	p=xcb_get_geometry_reply(d,xcb_get_geometry_unchecked(d,*y),0);
 	mx=((xcb_get_geometry_reply_t*)p)->x;
@@ -90,8 +95,8 @@ mvsz:p=xcb_grab_pointer_reply(d,xcb_grab_pointer_unchecked(d,0,rt,XCB_EVENT_MASK
 	p=xcb_query_pointer_reply(d,xcb_query_pointer_unchecked(d,rt),0);
 	mx=((xcb_query_pointer_reply_t*)p)->root_x-mx;
 	my=((xcb_query_pointer_reply_t*)p)->root_y-my;
-freeflush:free(p);
-	goto noflush;
+	free(p);
+	goto noflush;}
 stack:mx=*x;
 	for(;x!=y;x+=x<y?:-1)*x=x[x<y?:-1];
 	*x=mx;
@@ -100,6 +105,7 @@ hocus:x=cz-1;
 pocus:xcb_set_input_focus(d,XCB_INPUT_FOCUS_POINTER_ROOT,*x,XCB_CURRENT_TIME);
 	if(!(mz&128))goto main;
 kcode:switch(mz&=127){
+	void*p;
 	case 1:case 3:goto mvsz;
 	case 23:case 49:
 		if(cz-cs<3)goto main;
