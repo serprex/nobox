@@ -140,7 +140,7 @@ kcode:switch(mz&=127){
 		free(p);
 		goto main;
 	case 47:goto*(cz==cs+1?&&main:(p=0,&&killit));
-	case 24:case 54:system(mz==24?"st&":"st -g 32x2+500+500 -e sh -c 'date;sleep 1'&");
+	case 24:system("alacritty&");
 	default:goto main;
 	}
 }
